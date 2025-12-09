@@ -1,13 +1,28 @@
-import React, { useEffect } from "react";
-import { View, Image, StyleSheet, StatusBar } from "react-native";
+// src/screens/SplashScreen.js
+
+import React, { useEffect } from 'react';
+import { View, Image, StyleSheet, StatusBar } from 'react-native';
+import { useSelector } from 'react-redux';
 
 const SplashScreen = ({ navigation }) => {
+  const userId = useSelector((state) => state.Auth?.userId);
+
+  console.log('SplashScreen → userId:', userId, '| Type:', typeof userId);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace("LoginScreen");
-    }, 2000); // Navigate to Home after 2 seconds
+    const checkUserAndNavigate = () => {
+      console.log('Deciding navigation... userId is:', userId);
+
+      if (userId) {
+        navigation.replace('TabNavigator');
+      } else {
+        navigation.replace('LoginScreen');
+      }
+    };
+
+    const timer = setTimeout(checkUserAndNavigate, 2000);
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, userId]);
 
   return (
     <View style={styles.container}>
@@ -17,7 +32,7 @@ const SplashScreen = ({ navigation }) => {
         barStyle="dark-content"
       />
       <Image
-        source={require("../assets/icon2.png")} // make sure the path is correct
+        source={require('../assets/icon2.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -28,9 +43,9 @@ const SplashScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
     width: 300,

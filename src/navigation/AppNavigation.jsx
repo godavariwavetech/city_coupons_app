@@ -18,6 +18,7 @@ import RegisterManuallyScreen from "../screens/RegisterManuallyScreen";
 import Rewards from "../screens/Rewards";
 import Home from "../screens/Home";
 import QRScannerScreen from "../screens/QRScannerScreen";
+import Profile from "../screens/Profile";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -234,6 +235,8 @@ const AppNavigation = () => {
         <Stack.Screen name="CoffeeOfferScreen" component={CoffeeOfferScreen} />
         <Stack.Screen name="CouponsListScreen" component={CouponsListScreen} />
         <Stack.Screen name="QRScannerScreen" component={QRScannerScreen} />
+        <Stack.Screen name="TabNavigator" component={TabNavigator} />
+        <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
   );

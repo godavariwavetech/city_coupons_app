@@ -1,7 +1,13 @@
-export const baseURL = 'https://sgcj3mv1-2308.inc1.devtunnels.ms/owner'; 
+export const baseURL = 'https://mycitycoupons.in:2370/nodeapp';
+// export const baseURL = 'http://192.168.0.156:2370/nodeapp';
 
 export const endpoints = {
-  REQUEST_LOGIN_OPT:'OwnerLogin',
-  VERIFY_LOGIN_OPT:'OwnerLoginwithOtp',
-  REGISTER_USER:'updateOwnerdetails',
+  REQUEST_LOGIN_OTP: 'user/login',
+  USER_REGISTRATION: "user",
+  USER_VERIFICATION: "user/verification",
+  GET_USER_PROFILE: "user", 
+  GET_CATEGORIES_WITH_VENDORS:"categoryswithvendors",
+  GET_COUPONS:"coupons",
+  GET_TRENDING_COUPONS:"trendingcoupons",
+  
 };

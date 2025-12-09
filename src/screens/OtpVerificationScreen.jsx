@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -17,12 +19,55 @@ import {
   responsiveFontSize,
 } from "react-native-responsive-dimensions";
 
-const OtpVerificationScreen = ({navigation}) => {
+// Redux
+import { useDispatch, useSelector } from "react-redux";
+import { verifyLoginOtp, requestLoginOtp, resetOtpState } from "../redux/reducers/auth";
+
+const OtpVerificationScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
+
+  const mobile = route.params?.mobile || "9999999999";
+  const { loading, message } = useSelector((state) => state.Auth);
+
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+
+  // Resend Timer
+  const [seconds, setSeconds] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+
   const inputRefs = useRef([]);
+
+  // Countdown Timer
+  useEffect(() => {
+    if (seconds > 0) {
+      const timer = setTimeout(() => setSeconds(seconds - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [seconds]);
+
+  const handleResendOtp = async () => {
+    if (!canResend) return;
+
+    const resultAction = await dispatch(requestLoginOtp(mobile));
+
+    if (requestLoginOtp.fulfilled.match(resultAction)) {
+      setModalMessage("New OTP sent successfully!");
+      setModalVisible(true);
+      setSeconds(30);        // Reset timer
+      setCanResend(false);   // Disable until countdown ends
+      setOtp(["", "", "", ""]); // Clear OTP input
+      inputRefs.current[0]?.focus();
+    } else {
+      const errMsg = resultAction.payload || "Failed to resend OTP";
+      setModalMessage(errMsg);
+      setModalVisible(true);
+    }
+  };
 
   const handleOtpChange = (value, index) => {
     if (/^[0-9]$/.test(value) || value === "") {
@@ -33,45 +78,52 @@ const OtpVerificationScreen = ({navigation}) => {
       if (value && index < 3) {
         inputRefs.current[index + 1].focus();
       }
+      if (!value && index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const enteredOtp = otp.join("");
+
     if (enteredOtp.length < 4) {
       setModalMessage("Please enter a valid 4-digit code");
       setModalVisible(true);
       return;
     }
-     navigation.replace("QRScannerScreen");
-    // Add OTP verification logic here
+
+    const resultAction = await dispatch(
+      verifyLoginOtp({ mobile, otp: enteredOtp })
+    );
+
+    if (verifyLoginOtp.fulfilled.match(resultAction)) {
+      Alert.alert("Success", "Login successful!", [
+        {
+          text: "OK",
+          onPress: () => {
+            navigation.replace("TabNavigator");
+          },
+        },
+      ]);
+    } else {
+      const errorMsg = resultAction.payload || "Invalid or expired OTP";
+      setModalMessage(errorMsg);
+      setModalVisible(true);
+    }
   };
 
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        { paddingTop: insets.top, paddingBottom: insets.bottom },
-      ]}
-    >
+    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      {/* Logo */}
-      <Image
-        source={require("../assets/icon2.png")}
-        style={styles.logo}
-        resizeMode="contain"
-      />
+      <Image source={require("../assets/icon2.png")} style={styles.logo} resizeMode="contain" />
 
-      {/* Title */}
       <Text style={styles.title}>Enter verification code</Text>
-
-      {/* Subtext */}
       <Text style={styles.subtitle}>
-        A code has been sent to <Text style={styles.phone}>+91 4545454710</Text>
+        A code has been sent to <Text style={styles.phone}>+91 {mobile}</Text>
       </Text>
 
-      {/* OTP Inputs */}
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
           <TextInput
@@ -82,25 +134,27 @@ const OtpVerificationScreen = ({navigation}) => {
             maxLength={1}
             value={digit}
             onChangeText={(value) => handleOtpChange(value, index)}
+            editable={!loading}
           />
         ))}
       </View>
 
-      {/* Resend */}
+      {/* Resend Section with Timer */}
       <View style={styles.resendContainer}>
-        <Text style={styles.resendText}>Don’t receive a code? </Text>
-        <TouchableOpacity>
-          <Text style={styles.resendLink}>Resend</Text>
-        </TouchableOpacity>
+        <Text style={styles.resendText}>Didn’t receive code? </Text>
+        {canResend ? (
+          <TouchableOpacity onPress={handleResendOtp}>
+            <Text style={styles.resendLink}>Resend OTP</Text>
+          </TouchableOpacity>
+        ) : (
+          <Text style={styles.resendTimer}>
+            Resend in {seconds}s
+          </Text>
+        )}
       </View>
 
-      {/* Validation Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setModalVisible(false)}
-      >
+      {/* Modal */}
+      <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalMessage}>{modalMessage}</Text>
@@ -115,8 +169,16 @@ const OtpVerificationScreen = ({navigation}) => {
       </Modal>
 
       {/* Verify Button */}
-      <TouchableOpacity style={styles.verifyButton} onPress={handleSubmit}>
-        <Text style={styles.verifyText}>Verify</Text>
+      <TouchableOpacity
+        style={[styles.verifyButton, loading && { backgroundColor: "#666" }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.verifyText}>Verify</Text>
+        )}
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -124,6 +186,7 @@ const OtpVerificationScreen = ({navigation}) => {
 
 export default OtpVerificationScreen;
 
+// Styles remain exactly the same as you provided
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -134,7 +197,6 @@ const styles = StyleSheet.create({
   logo: {
     width: responsiveWidth(50),
     height: responsiveHeight(15),
-    // marginBottom: responsiveHeight(5),
   },
   title: {
     fontSize: responsiveFontSize(2.3),
@@ -166,10 +228,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: responsiveFontSize(2.3),
     color: "#000",
+    backgroundColor: "#fafafa",
   },
   resendContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: responsiveHeight(2),
   },
   resendText: {
     fontSize: responsiveFontSize(1.8),
@@ -194,7 +258,6 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(2),
     fontWeight: "600",
   },
-  // Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -226,4 +289,9 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.9),
     fontWeight: "600",
   },
+  resendTimer: {
+  fontSize: responsiveFontSize(1.8),
+  color: "#888",
+  fontWeight: "600",
+},
 });

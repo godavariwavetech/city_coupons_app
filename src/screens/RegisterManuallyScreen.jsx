@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// RegisterManuallyScreen.jsx
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,20 +10,24 @@ import {
   SafeAreaView,
   Image,
   ScrollView,
-  Platform,
   Alert,
-  PermissionsAndroid,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import DatePicker from 'react-native-date-picker';
-import { launchImageLibrary } from 'react-native-image-picker'; // Removed launchCamera import since camera is not used
+import { launchImageLibrary } from 'react-native-image-picker';
 import CustomModal from '../components/CustomModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser, resetOtpState } from '../redux/reducers/auth'; // Adjust path if needed
 
 const RegisterManuallyScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
+  const dispatch = useDispatch();
+  const { loading, message } = useSelector((state) => state.Auth);
 
-  // Form state
+  // Form States
   const [fullName, setFullName] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -31,213 +36,146 @@ const RegisterManuallyScreen = ({ navigation }) => {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [pincode, setPincode] = useState('');
-  const [state, setState] = useState('');
+  const [stateName, setStateName] = useState('');
+  const [imageBase64, setImageBase64] = useState('');
+  const [profileImageUri, setProfileImageUri] = useState(null);
 
-  // Error states
+  // UI States
   const [errors, setErrors] = useState({});
-
-  // Image state
-  const [profileImage, setProfileImage] = useState(require('../assets/profile1.png'));
-
-  // Dropdown states
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
-  // Modal states
   const [modalVisible, setModalVisible] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalContent, setModalContent] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const showErrorModal = (title, content) => {
-    setIsSuccess(false);
-    setModalTitle(title);
-    setModalContent(content);
-    setModalVisible(true);
-  };
+  // Reset state on mount
+  useEffect(() => {
+    dispatch(resetOtpState());
+  }, [dispatch]);
 
-  const showSuccessModal = (title, content) => {
+
+  useEffect(() => {
+  dispatch(resetOtpState()); // Already there — good!
+  
+  // Also clear any old message
+  dispatch({ type: 'auth/clearMessage' }); // We'll create this
+}, [dispatch]);
+  // Watch for registration result
+// Watch ONLY for registration result (not old messages)
+useEffect(() => {
+  // Wait until registration is done (loading = false) and we have a fresh message
+  if (loading) return; // Don't show anything while loading
+
+  if (!message) return; // No message → do nothing
+
+  // Only react to messages that come from registration
+  if (message.includes('Successfully') || message.toLowerCase().includes('registered')) {
+    setModalTitle('Success');
+    setModalContent('User Registered Successfully!');
     setIsSuccess(true);
-    setModalTitle(title);
-    setModalContent(content);
     setModalVisible(true);
-  };
+  } else if (message && message !== 'New User - Register First') {
+    // Only show error if it's NOT the old "New User" message
+    setModalTitle('Registration Failed');
+    setModalContent(message);
+    setIsSuccess(false);
+    setModalVisible(true);
+  }
+}, [message, loading]);
 
-  // Validation functions
-  const validateFullName = (name) => {
-    if (!name.trim()) return 'Full Name is required';
-    if (name.trim().length < 2) return 'Full Name must be at least 2 characters';
-    return null;
-  };
-
-  const validateMobileNumber = (num) => {
-    if (!num.trim()) return 'Mobile Number is required';
-    const clean = num.replace(/\D/g, '');
-    if (clean.length !== 10) return 'Mobile Number must be exactly 10 digits';
-    return null;
-  };
-
-  const validateEmail = (email) => {
-    if (!email.trim()) return 'Email is required';
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return 'Please enter a valid email address';
-    return null;
-  };
-
-  const validateGender = (g) => {
-    if (!g) return 'Gender is required';
-    return null;
-  };
-
-  const validateDateOfBirth = (dob) => {
-    if (!dob) return 'Date of Birth is required';
-    return null;
-  };
-
-  const validateAddress = (addr) => {
-    if (!addr.trim()) return 'Address is required';
-    if (addr.trim().length < 5) return 'Address must be at least 5 characters';
-    return null;
-  };
-
-  const validateCity = (c) => {
-    if (!c.trim()) return 'City is required';
-    if (c.trim().length < 2) return 'City must be at least 2 characters';
-    return null;
-  };
-
-  const validatePincode = (p) => {
-    if (!p.trim()) return 'Pincode is required';
-    if (p.length !== 6 || !/^\d{6}$/.test(p)) return 'Pincode must be exactly 6 digits';
-    return null;
-  };
-
-  const validateState = (s) => {
-    if (!s.trim()) return 'State is required';
-    if (s.trim().length < 2) return 'State must be at least 2 characters';
-    return null;
-  };
-
-  // Handle gallery selection (simplified to match the first code: no explicit storage permission request)
+  // Open Gallery
   const handleGallery = () => {
-    try {
-      const options = {
+    launchImageLibrary(
+      {
         mediaType: 'photo',
-        maxWidth: 300,
-        maxHeight: 300,
-        quality: 1,
-        includeBase64: true, // Added to match the first code's options
-      };
-      
-      launchImageLibrary(options, (response) => { // Switched to callback style to exactly match the first code
-        if (response.didCancel) {
-          console.log('User cancelled gallery');
-        } else if (response.errorCode) {
-          Alert.alert('Error', response.errorMessage || 'Failed to select image');
-        } else if (response.assets && response.assets.length > 0) {
-          const imageUri = response.assets[0].uri;
-          setProfileImage({ uri: imageUri });
+        includeBase64: true,
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.8,
+      },
+      (response) => {
+        if (response.didCancel) return;
+        if (response.errorCode) {
+          Alert.alert('Error', response.errorMessage || 'Failed to pick image');
+          return;
         }
-      });
-    } catch (err) {
-      console.error('Gallery Error:', err);
-      Alert.alert('Error', 'An error occurred while accessing the gallery');
-    }
+        if (response.assets && response.assets[0]) {
+          const asset = response.assets[0];
+          setProfileImageUri({ uri: asset.uri });
+          setImageBase64(asset.base64 ? `data:${asset.type};base64,${asset.base64}` : '');
+        }
+      }
+    );
   };
 
-  // Format date to DD/MM/YYYY
-  const formatDate = (date) => {
+  // Format DOB to YYYY-MM-DD
+  const formatDOB = (date) => {
     if (!date) return '';
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    const d = new Date(date);
+    return d.toISOString().split('T')[0]; // "1998-08-12"
   };
 
-  // Validate all fields
+  // Validation
   const validateForm = () => {
-    const newErrors = {
-      fullName: validateFullName(fullName),
-      mobileNumber: validateMobileNumber(mobileNumber),
-      email: validateEmail(email),
-      gender: validateGender(gender),
-      dateOfBirth: validateDateOfBirth(dateOfBirth),
-      address: validateAddress(address),
-      city: validateCity(city),
-      pincode: validatePincode(pincode),
-      state: validateState(state),
-    };
+    const newErrors = {};
+
+    if (!fullName.trim()) newErrors.fullName = 'Full Name is required';
+    if (!mobileNumber.match(/^\d{10}$/)) newErrors.mobileNumber = 'Enter valid 10-digit mobile';
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) newErrors.email = 'Enter valid email';
+    if (!gender) newErrors.gender = 'Select gender';
+    if (!dateOfBirth) newErrors.dateOfBirth = 'Select date of birth';
+    if (!address.trim()) newErrors.address = 'Address is required';
+    if (!city.trim()) newErrors.city = 'City is required';
+    if (!pincode.match(/^\d{6}$/)) newErrors.pincode = 'Enter valid 6-digit pincode';
+    if (!stateName.trim()) newErrors.state = 'State is required';
+
     setErrors(newErrors);
-    const hasErrors = Object.values(newErrors).some((error) => error !== null);
-    if (hasErrors) {
-      showErrorModal('Validation Error', 'Please correct the errors below to proceed');
-      return false;
-    }
-    return true;
+    return Object.keys(newErrors).length === 0;
   };
 
+  // Submit Registration
   const handleSubmit = () => {
-    if (validateForm()) {
-      console.log('Form submitted successfully');
-      const formData = {
-        fullName,
-        mobileNumber,
-        email,
-        gender,
-        dateOfBirth: formatDate(dateOfBirth),
-        address,
-        city,
-        pincode,
-        state,
-      };
-      console.log(formData);
-      // Show success modal
-      showSuccessModal('Registration Successful', 'Your account has been created successfully!');
+    if (!validateForm()) {
+      setModalTitle('Validation Error');
+      setModalContent('Please fill all fields correctly');
+      setIsSuccess(false);
+      setModalVisible(true);
+      return;
     }
+
+    const payload = {
+      name: fullName.trim(),
+      mobile: mobileNumber,
+      email: email.trim().toLowerCase(),
+      gender,
+      dob: formatDOB(dateOfBirth),
+      address: address.trim(),
+      city: city.trim(),
+      pincode,
+      state: stateName.trim(),
+      image: imageBase64 || '',
+    };
+
+    console.log('Register Payload →', payload);
+    dispatch(registerUser(payload));
   };
 
   const handleModalConfirm = () => {
     setModalVisible(false);
     if (isSuccess) {
-      navigation.navigate('MainApp');
+      navigation.replace('LoginScreen'); // or 'Login' depending on your route name
     }
   };
 
-  // Helper to handle onChange and clear error
-  const handleChange = (setter, field, value) => {
-    setter(value);
-    setErrors((prev) => ({ ...prev, [field]: null }));
-  };
-
-  // Helper to handle onBlur and validate
-  const handleBlur = (validator, field, value) => {
-    const error = validator(value);
-    setErrors((prev) => ({ ...prev, [field]: error }));
-  };
-
   return (
-    <SafeAreaView
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top,
-          // Removed paddingBottom: insets.bottom to avoid overlap with bottom tab navigator
-          // Bottom safe area is handled by the tab bar itself in React Navigation
-        },
-      ]}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={[
-          styles.scrollContent,
-          // Apply bottom padding to content container to ensure button doesn't go under tab bar
-          // Use a fixed value or dynamic if tabBarHeight is available via navigation
-          { paddingBottom: Math.max(insets.bottom, 10) }, // 100 approximates tab bar height + safe area; adjust as needed
-        ]}
+        contentContainerStyle={{ padding: 20, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled" // Added to improve keyboard handling on scroll
+        keyboardShouldPersistTaps="handled"
       >
         {/* Logo */}
         <Image
@@ -246,25 +184,19 @@ const RegisterManuallyScreen = ({ navigation }) => {
           resizeMode="contain"
         />
 
-        {/* Profile Picture */}
+        {/* Profile Image */}
         <View style={styles.profileContainer}>
-          <View style={styles.profileImageWrapper}>
-            <TouchableOpacity 
-            onPress={handleGallery} > <Image
-              source={profileImage}
+          <TouchableOpacity onPress={handleGallery}>
+            <Image
+              source={profileImageUri || require('../assets/profile1.png')}
               style={styles.profileImage}
-            /></TouchableOpacity>
-           
-            <TouchableOpacity 
-              style={styles.cameraIcon}
-              onPress={handleGallery} // Changed to directly open gallery
-            >
-              <Feather name="camera" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
+            />
+            <View style={styles.cameraIcon}>
+              <Feather name="camera" size={20} color="#fff" />
+            </View>
+          </TouchableOpacity>
         </View>
 
-        {/* Form Title */}
         <Text style={styles.formTitle}>User Registration</Text>
 
         {/* Full Name */}
@@ -273,77 +205,69 @@ const RegisterManuallyScreen = ({ navigation }) => {
           <TextInput
             style={styles.input}
             value={fullName}
-            onChangeText={(text) => handleChange(setFullName, 'fullName', text)}
-            onBlur={() => handleBlur(validateFullName, 'fullName', fullName)}
+            onChangeText={setFullName}
             placeholder="Harsha Kumar"
-            placeholderTextColor="#999999"
+            placeholderTextColor="#000"
           />
           {errors.fullName && <Text style={styles.errorText}>{errors.fullName}</Text>}
         </View>
 
-        {/* Mobile Number */}
+        {/* Mobile */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Mobile Number</Text>
           <TextInput
             style={styles.input}
             value={mobileNumber}
-            onChangeText={(text) => handleChange(setMobileNumber, 'mobileNumber', text)}
-            onBlur={() => handleBlur(validateMobileNumber, 'mobileNumber', mobileNumber)}
-            placeholder="+91 98765 43210"
-            placeholderTextColor="#999999"
-            keyboardType="phone-pad"
+            onChangeText={setMobileNumber}
+            keyboardType="number-pad"
+            maxLength={10}
+            placeholder="9876543210"
+            placeholderTextColor="#000"
           />
           {errors.mobileNumber && <Text style={styles.errorText}>{errors.mobileNumber}</Text>}
         </View>
 
-        {/* Email Address */}
+        {/* Email */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email Address</Text>
           <TextInput
             style={styles.input}
             value={email}
-            onChangeText={(text) => handleChange(setEmail, 'email', text)}
-            onBlur={() => handleBlur(validateEmail, 'email', email)}
-            placeholder="harsha.kumar@gmail.com"
-            placeholderTextColor="#999999"
+            onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            placeholder="harsha.kumar@gmail.com"
+            placeholderTextColor="#000"
           />
           {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
         </View>
 
-        {/* Gender and Date of Birth Row */}
+        {/* Gender & DOB Row */}
         <View style={styles.row}>
-          {/* Gender */}
-          <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+          <View style={{ flex: 1, marginRight: 8 }}>
             <Text style={styles.label}>Gender</Text>
             <TouchableOpacity
               style={styles.dropdownInput}
               onPress={() => setShowGenderDropdown(!showGenderDropdown)}
             >
-              <Text
-                style={[
-                  styles.dropdownText,
-                  !gender && { color: '#999999' },
-                ]}
-              >
-                {gender || 'Male'}
+              <Text style={{ color: gender ? '#000' : '#000' }}>
+                {gender || 'Select Gender'}
               </Text>
-              <Feather name="chevron-down" size={20} color="#666666" />
+              <Feather name="chevron-down" size={20} color="#666" />
             </TouchableOpacity>
             {showGenderDropdown && (
               <View style={styles.dropdownMenu}>
-                {['Male', 'Female', 'Other'].map((item) => (
+                {['Male', 'Female', 'Other'].map((g) => (
                   <TouchableOpacity
-                    key={item}
+                    key={g}
                     style={styles.dropdownItem}
                     onPress={() => {
-                      setGender(item);
-                      setErrors((prev) => ({ ...prev, gender: null }));
+                      setGender(g);
                       setShowGenderDropdown(false);
+                      setErrors({ ...errors, gender: null });
                     }}
                   >
-                    <Text style={styles.dropdownItemText}>{item}</Text>
+                    <Text style={styles.dropdownItemText}>{g}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -351,45 +275,30 @@ const RegisterManuallyScreen = ({ navigation }) => {
             {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
           </View>
 
-          {/* Date of Birth */}
-          <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+          <View style={{ flex: 1, marginLeft: 8 }}>
             <Text style={styles.label}>Date of Birth</Text>
             <TouchableOpacity
-              style={styles.dateInputContainer}
+              style={styles.dateInput}
               onPress={() => setShowDatePicker(true)}
             >
-              <Text
-                style={[
-                  styles.dateText,
-                  !dateOfBirth && { color: '#999999' },
-                ]}
-              >
-                {dateOfBirth ? formatDate(dateOfBirth) : '12/08/1998'}
+              <Text style={{ color: dateOfBirth ? '#000' : '#999' }}>
+                {dateOfBirth ? formatDOB(dateOfBirth) : 'YYYY-MM-DD'}
               </Text>
-              <Feather
-                name="calendar"
-                size={20}
-                color="#666666"
-                style={styles.calendarIcon}
-              />
+              <Feather name="calendar" size={20} color="#666" />
             </TouchableOpacity>
             {errors.dateOfBirth && <Text style={styles.errorText}>{errors.dateOfBirth}</Text>}
           </View>
         </View>
 
-        {/* Address & Location Section */}
-        <Text style={styles.sectionTitle}>Address & Location</Text>
-
-        {/* Address / Street Name */}
+        {/* Address */}
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Address / Street Name</Text>
           <TextInput
             style={styles.input}
             value={address}
-            onChangeText={(text) => handleChange(setAddress, 'address', text)}
-            onBlur={() => handleBlur(validateAddress, 'address', address)}
+            onChangeText={setAddress}
             placeholder="45-2-16, Near Pushkar Ghat Road"
-            placeholderTextColor="#999999"
+            placeholderTextColor="#000"
           />
           {errors.address && <Text style={styles.errorText}>{errors.address}</Text>}
         </View>
@@ -400,53 +309,56 @@ const RegisterManuallyScreen = ({ navigation }) => {
           <TextInput
             style={styles.input}
             value={city}
-            onChangeText={(text) => handleChange(setCity, 'city', text)}
-            onBlur={() => handleBlur(validateCity, 'city', city)}
+            onChangeText={setCity}
             placeholder="Rajahmundry"
-            placeholderTextColor="#999999"
+            placeholderTextColor="#000"
           />
           {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
         </View>
 
-        {/* Pincode */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Pincode</Text>
-          <TextInput
-            style={styles.input}
-            value={pincode}
-            onChangeText={(text) => handleChange(setPincode, 'pincode', text)}
-            onBlur={() => handleBlur(validatePincode, 'pincode', pincode)}
-            placeholder="533101"
-            placeholderTextColor="#999999"
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-          {errors.pincode && <Text style={styles.errorText}>{errors.pincode}</Text>}
-        </View>
-
-        {/* State */}
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>State</Text>
-          <TextInput
-            style={styles.input}
-            value={state}
-            onChangeText={(text) => handleChange(setState, 'state', text)}
-            onBlur={() => handleBlur(validateState, 'state', state)}
-            placeholder="Andhra Pradesh"
-            placeholderTextColor="#999999"
-          />
-          {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+        {/* Pincode & State Row */}
+        <View style={styles.row}>
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={styles.label}>Pincode</Text>
+            <TextInput
+              style={styles.input}
+              value={pincode}
+              onChangeText={setPincode}
+              keyboardType="number-pad"
+              maxLength={6}
+              placeholder="533101"
+              placeholderTextColor="#000"
+            />
+            {errors.pincode && <Text style={styles.errorText}>{errors.pincode}</Text>}
+          </View>
+          <View style={{ flex: 1, marginLeft: 8 }}>
+            <Text style={styles.label}>State</Text>
+            <TextInput
+              style={styles.input}
+              value={stateName}
+              onChangeText={setStateName}
+              placeholder="Andhra Pradesh"
+              placeholderTextColor="#000"
+            />
+            {errors.state && <Text style={styles.errorText}>{errors.state}</Text>}
+          </View>
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
+        <TouchableOpacity
+          style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.submitButtonText}>Submit</Text>
+          )}
         </TouchableOpacity>
-
-        <View style={{ height: 20 }} />
       </ScrollView>
 
-      {/* Date Picker Modal */}
+      {/* Date Picker */}
       <DatePicker
         modal
         open={showDatePicker}
@@ -456,17 +368,14 @@ const RegisterManuallyScreen = ({ navigation }) => {
         onConfirm={(date) => {
           setShowDatePicker(false);
           setDateOfBirth(date);
-          setErrors((prev) => ({ ...prev, dateOfBirth: null }));
+          setErrors({ ...errors, dateOfBirth: null });
         }}
-        onCancel={() => {
-          setShowDatePicker(false);
-        }}
+        onCancel={() => setShowDatePicker(false)}
       />
 
-      {/* Validation Error Modal */}
+      {/* Modal */}
       <CustomModal
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
         title={modalTitle}
         content={modalContent}
         onConfirm={handleModalConfirm}
@@ -478,163 +387,75 @@ const RegisterManuallyScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-  },
-  logo: {
-    width: 160,
-    height: 100,
-    alignSelf: 'center',
-    // marginTop: 10,
-    // marginBottom: 20,
-  },
-  profileContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  profileImageWrapper: {
-    position: 'relative',
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: '#E0E0E0',
-  },
+  logo: { width: 160, height: 100, alignSelf: 'center', marginVertical: 10 },
+  profileContainer: { alignItems: 'center', marginVertical: 20 },
+  profileImage: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#ddd' },
   cameraIcon: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#4A90E2',
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#001D4A',
+    padding: 8,
+    borderRadius: 20,
     borderWidth: 3,
-    borderColor: '#FFFFFF',
+    borderColor: '#fff',
   },
-  formTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 13,
-    color: '#333333',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
+  formTitle: { fontSize: 20, fontWeight: '600', textAlign: 'center', marginBottom: 20, color: '#000' },
+  inputGroup: { marginBottom: 16 },
+  label: { fontSize: 14, marginBottom: 8, color: '#333', fontWeight: '500' },
   input: {
     borderWidth: 1,
-    borderColor: '#D0D0D0',
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 14,
-    color: '#000000',
-    backgroundColor: '#FFFFFF',
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
+  row: { flexDirection: 'row', marginBottom: 16 },
   dropdownInput: {
     borderWidth: 1,
-    borderColor: '#D0D0D0',
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    padding: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-  },
-  dropdownText: {
-    fontSize: 14,
-    color: '#000000',
+    backgroundColor: '#fff',
   },
   dropdownMenu: {
     position: 'absolute',
     top: 70,
     left: 0,
     right: 0,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#D0D0D0',
+    backgroundColor: '#fff',
     borderRadius: 8,
-    zIndex: 1000,
+    borderWidth: 1,
+    borderColor: '#ddd',
     elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    zIndex: 10,
   },
-  dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  dateInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  dropdownItem: { padding: 12, borderBottomWidth: 1, borderBottomColor: '#eee' },
+  dropdownItemText: { fontSize: 16 },
+  dateInput: {
     borderWidth: 1,
-    borderColor: '#D0D0D0',
+    borderColor: '#ddd',
     borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#000000',
-  },
-  calendarIcon: {
-    marginLeft: 8,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000000',
-    marginTop: 8,
-    marginBottom: 16,
-  },
-  submitButton: {
-    backgroundColor: 'rgba(0, 33, 97, 1)',
-    borderRadius: 8,
-    paddingVertical: 14,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 20, // Added extra margin to push button up from bottom
+    backgroundColor: '#fff',
   },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  errorText: { color: 'red', fontSize: 12, marginTop: 4 },
+  submitButton: {
+    backgroundColor: '#001D4A',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
   },
-  errorText: {
-    color: '#FF0000',
-    fontSize: 12,
-    marginTop: 4,
-  },
+  submitButtonDisabled: { opacity: 0.7 },
+  submitButtonText: { color: '#fff', fontSize: 18, fontWeight: '600' },
 });
 
 export default RegisterManuallyScreen;
