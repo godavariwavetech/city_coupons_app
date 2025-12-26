@@ -17,6 +17,7 @@ import MyCouponHistory from "../screens/MyCouponHistory";
 import RegisterManuallyScreen from "../screens/RegisterManuallyScreen";
 import Rewards from "../screens/Rewards";
 import Home from "../screens/Home";
+import RedeemCouponsScreen from "../screens/RedeemCouponsScreen";
 import QRScannerScreen from "../screens/QRScannerScreen";
 import Profile from "../screens/Profile";
 
@@ -182,7 +183,7 @@ const TabNavigator = () => {
           tabBarLabel: "My Coupons",
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Scan"
         component={ScanPlaceholder}
         options={{
@@ -194,7 +195,7 @@ const TabNavigator = () => {
             navigation.navigate('Home', { openScanner: true });
           },
         })}
-      />
+      /> */}
       <Tab.Screen
         name="History"
         component={MyCouponHistory}
@@ -237,6 +238,8 @@ const AppNavigation = () => {
         <Stack.Screen name="QRScannerScreen" component={QRScannerScreen} />
         <Stack.Screen name="TabNavigator" component={TabNavigator} />
         <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Screen name="MyCouponHistory" component={MyCouponHistory} />
+        <Stack.Screen name="RedeemCouponsScreen" component={RedeemCouponsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

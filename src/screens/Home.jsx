@@ -667,7 +667,7 @@ const Home = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Search */}
+        {/* Search */}  
         <View style={styles.searchContainer}>
           <Feather name="search" size={20} color="#FFFFFF" />
           <TextInput
@@ -699,7 +699,7 @@ const Home = ({ navigation, route }) => {
             contentContainerStyle={styles.offersList}
           />
         ) : (
-          <Text style={{ paddingHorizontal: 20, color: '#666', marginBottom: 20 }}>
+          <Text style={{ paddingHorizontal: 20, color: '#666', marginBottom: 20 , fontFamily:"SF-Pro-Display-Regular"}}>
             No trending offers right now
           </Text>
         )}
@@ -709,9 +709,9 @@ const Home = ({ navigation, route }) => {
           <View>
             <Text style={styles.sectionTitle}>COUPONS STORE</Text>
           </View>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <MaterialCommunityIcons name="filter-variant" size={22} color="#000" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {couponsLoading && !refreshing ? (
@@ -748,29 +748,30 @@ const styles = StyleSheet.create({
   profileImage1: { width: 150, height: 50, borderRadius: 20 },
   profileImage: { width: 40, height: 40, borderRadius: 20 },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#003366', borderRadius: 25, paddingHorizontal: 20, marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
-  searchInput: { flex: 1, marginLeft: 12, fontSize: 15, color: '#FFFFFF' },
+  searchInput: { flex: 1, marginLeft: 12, fontSize: 15, color: '#FFFFFF' ,     fontFamily:"SF-Pro-Display-Regular"},
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 16 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#000000', letterSpacing: 0.5 },
+  sectionTitle: { fontSize: 16,  color: '#000000', letterSpacing: 0.5 ,
+     fontFamily:"SF-Pro-Display-Bold"},
   newBadge: { backgroundColor: '#6C3FE8', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 4 },
   newBadgeText: { fontSize: 11, fontWeight: '600', color: '#FFFFFF' },
   offersList: { paddingLeft: 20, paddingRight: 20 },
-  offerCard: { width: 140, marginRight: 16, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, overflow: 'hidden', borderWidth: 0.5, borderColor: '#d2d2d2' },
+  offerCard: { width: 140, marginRight: 8, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, overflow: 'hidden', borderWidth: 0.5, borderColor: '#d2d2d2' },
   imageContainer: { position: 'relative' },
   offerImage: { width: '100%', height: 100, backgroundColor: '#F5F5F5' },
   logoOverlay: { position: 'absolute', top: 8, left: 8, width: 40, height: 40, borderRadius: 6, borderWidth: 2, borderColor: '#FFFFFF' },
   offerContent: { padding: 12 },
   offerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  offerTitle: { fontSize: 14, fontWeight: '600', color: '#000000' },
-  offerSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4 },
-  offerPrice: { fontSize: 13, fontWeight: '600', color: '#000000' },
+  offerTitle: { fontSize: 14, fontWeight: '600', color: '#000000',      fontFamily:"SF-Pro-Display-Bold" },
+  offerSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4 ,     fontFamily:"SF-Pro-Display-Regular"},
+  offerPrice: { fontSize: 13, fontWeight: '600', color: '#000000',     fontFamily:"SF-Pro-Display-Semibold" },
   couponGrid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, justifyContent: 'space-between' },
   couponCard: { width: '48%', marginBottom: 16, borderRadius: 12, backgroundColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, overflow: 'hidden' },
   couponImage: { width: '100%', height: 120, backgroundColor: '#F5F5F5' },
   couponContent: { padding: 12 },
   couponHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  couponTitle: { fontSize: 14, fontWeight: '600', color: '#000000', flex: 1 },
-  couponSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4 },
-  couponCodeText: { fontSize: 13, fontWeight: '600', color: '#000000' },
+  couponTitle: { fontSize: 14, fontWeight: '600', color: '#000000', flex: 1, fontFamily:"SF-Pro-Display-Bold" },
+  couponSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4,     fontFamily:"SF-Pro-Display-Regular" },
+  couponCodeText: { fontSize: 13, fontWeight: '600', color: '#000000',     fontFamily:"SF-Pro-Display-Semibold" },
 });
 
 export default Home; 

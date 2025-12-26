@@ -21,14 +21,14 @@ import {
 
 // Redux
 import { useDispatch, useSelector } from "react-redux";
-import { verifyLoginOtp, requestLoginOtp, resetOtpState } from "../redux/reducers/auth";
+import { verifyLoginOtp, requestLoginOtp } from "../redux/reducers/auth";
 
 const OtpVerificationScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
   const mobile = route.params?.mobile || "9999999999";
-  const { loading, message } = useSelector((state) => state.Auth);
+  const { loading } = useSelector((state) => state.Auth);
 
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -58,9 +58,9 @@ const OtpVerificationScreen = ({ navigation, route }) => {
     if (requestLoginOtp.fulfilled.match(resultAction)) {
       setModalMessage("New OTP sent successfully!");
       setModalVisible(true);
-      setSeconds(30);        // Reset timer
-      setCanResend(false);   // Disable until countdown ends
-      setOtp(["", "", "", ""]); // Clear OTP input
+      setSeconds(30);
+      setCanResend(false);
+      setOtp(["", "", "", ""]);
       inputRefs.current[0]?.focus();
     } else {
       const errMsg = resultAction.payload || "Failed to resend OTP";
@@ -121,7 +121,8 @@ const OtpVerificationScreen = ({ navigation, route }) => {
 
       <Text style={styles.title}>Enter verification code</Text>
       <Text style={styles.subtitle}>
-        A code has been sent to <Text style={styles.phone}>+91 {mobile}</Text>
+        A code has been sent to{" "}
+        <Text style={styles.phone}>+91 {mobile}</Text>
       </Text>
 
       <View style={styles.otpContainer}>
@@ -186,7 +187,6 @@ const OtpVerificationScreen = ({ navigation, route }) => {
 
 export default OtpVerificationScreen;
 
-// Styles remain exactly the same as you provided
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -200,17 +200,19 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: responsiveFontSize(2.3),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
     color: "#000",
     marginBottom: responsiveHeight(1),
   },
   subtitle: {
     fontSize: responsiveFontSize(1.8),
+    fontFamily: "SF-Pro-Display-Medium",
     color: "#555",
     marginBottom: responsiveHeight(4),
+    textAlign: "center",
   },
   phone: {
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
     color: "#000",
   },
   otpContainer: {
@@ -227,6 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     textAlign: "center",
     fontSize: responsiveFontSize(2.3),
+    fontFamily: "SF-Pro-Display-Bold",
     color: "#000",
     backgroundColor: "#fafafa",
   },
@@ -237,12 +240,18 @@ const styles = StyleSheet.create({
   },
   resendText: {
     fontSize: responsiveFontSize(1.8),
+    fontFamily: "SF-Pro-Display-Medium",
     color: "#000",
   },
   resendLink: {
     fontSize: responsiveFontSize(1.8),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
     color: "#001D4A",
+  },
+  resendTimer: {
+    fontSize: responsiveFontSize(1.8),
+    fontFamily: "SF-Pro-Display-Semibold",
+    color: "#888",
   },
   verifyButton: {
     backgroundColor: "#001D4A",
@@ -256,7 +265,7 @@ const styles = StyleSheet.create({
   verifyText: {
     color: "#fff",
     fontSize: responsiveFontSize(2),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
   },
   modalOverlay: {
     flex: 1,
@@ -274,6 +283,7 @@ const styles = StyleSheet.create({
   },
   modalMessage: {
     fontSize: responsiveFontSize(2),
+    fontFamily: "SF-Pro-Display-Medium",
     color: "#000",
     marginBottom: responsiveHeight(2),
     textAlign: "center",
@@ -287,11 +297,6 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: "#fff",
     fontSize: responsiveFontSize(1.9),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
   },
-  resendTimer: {
-  fontSize: responsiveFontSize(1.8),
-  color: "#888",
-  fontWeight: "600",
-},
 });

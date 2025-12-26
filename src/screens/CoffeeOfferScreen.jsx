@@ -395,7 +395,6 @@ import {
   Image,
   Dimensions,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -411,13 +410,14 @@ const CoffeeOfferScreen = () => {
   const route = useRoute();
   const { coupon } = route.params || {};
 
-  // State to expand/collapse Offer Details
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (!coupon) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>No offer data</Text>
+        <Text style={{ fontFamily: 'SF-Pro-Display-Medium', fontSize: 16, color: '#999' }}>
+          No offer data
+        </Text>
       </View>
     );
   }
@@ -427,9 +427,9 @@ const CoffeeOfferScreen = () => {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
- const handleRedeemNow = () => {
-  navigation.navigate('QRScannerScreen', { coupon });
-};
+  const handleRedeemNow = () => {
+    navigation.navigate('QRScannerScreen', { coupon });
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -485,7 +485,7 @@ const CoffeeOfferScreen = () => {
 
         {/* Main Content */}
         <View style={styles.bodyWrapper}>
-          {/* Coupon Artwork (the actual offer banner) */}
+          {/* Coupon Artwork */}
           <View style={styles.couponArtworkCard}>
             <Image
               source={{ uri: coupon.imageUrl }}
@@ -524,17 +524,12 @@ const CoffeeOfferScreen = () => {
           </TouchableOpacity>
 
           {/* Expanded Terms */}
-          {isExpanded && coupon.terms && (
+          {isExpanded && (
             <View style={styles.expandedTermsContainer}>
               <Text style={styles.termsTitle}>Terms & Conditions</Text>
-              <Text style={styles.termsText}>{coupon.terms}</Text>
-            </View>
-          )}
-
-          {/* Optional: Show if no terms */}
-          {isExpanded && !coupon.terms && (
-            <View style={styles.expandedTermsContainer}>
-              <Text style={styles.termsText}>No additional terms available.</Text>
+              <Text style={styles.termsText}>
+                {coupon.terms || "No additional terms available."}
+              </Text>
             </View>
           )}
 
@@ -595,8 +590,17 @@ const styles = StyleSheet.create({
   },
   cafeLogoOverlay: { width: 56, height: 56, borderRadius: 12 },
   cafeTextOverlay: { marginLeft: 14, flex: 1 },
-  cafeNameOverlay: { fontSize: 17, fontWeight: 'bold', color: '#fff' },
-  cafeAddressOverlay: { fontSize: 12, color: '#eee', lineHeight: 16 },
+  cafeNameOverlay: {
+    fontSize: 17,
+    fontFamily: 'SF-Pro-Display-Semibold',
+    color: '#fff',
+  },
+  cafeAddressOverlay: {
+    fontSize: 12,
+    fontFamily: 'SF-Pro-Display-Medium',
+    color: '#eee',
+    lineHeight: 16,
+  },
 
   bodyWrapper: {
     backgroundColor: '#ffffff',
@@ -634,7 +638,7 @@ const styles = StyleSheet.create({
   redeemButtonFullText: {
     color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'SF-Pro-Display-Bold',
     marginLeft: 10,
   },
 
@@ -647,12 +651,12 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 15.5,
+    fontFamily: 'SF-Pro-Display-Medium',
     color: '#444',
     marginLeft: 14,
     flex: 1,
   },
 
-  // Expanded Terms Section
   expandedTermsContainer: {
     backgroundColor: '#f9f9f9',
     padding: 18,
@@ -664,12 +668,13 @@ const styles = StyleSheet.create({
   },
   termsTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: 'SF-Pro-Display-Semibold',
     color: '#0F172A',
     marginBottom: 8,
   },
   termsText: {
     fontSize: 14.5,
+    fontFamily: 'SF-Pro-Display-Medium',
     color: '#555',
     lineHeight: 22,
   },

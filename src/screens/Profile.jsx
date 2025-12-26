@@ -320,7 +320,7 @@ import {
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { launchImageLibrary } from "react-native-image-picker"; // ← This gives base64 directly!
+import { launchImageLibrary } from "react-native-image-picker";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, updateUserProfile } from "../redux/reducers/auth";
 
@@ -333,8 +333,8 @@ function Profile({ navigation }) {
 
   const { userId, profile, loading } = useSelector((state) => state.Auth);
 
-  const [imageUri, setImageUri] = useState(null);           // For display
-  const [imageBase64, setImageBase64] = useState("");       // For sending to backend
+  const [imageUri, setImageUri] = useState(null);
+  const [imageBase64, setImageBase64] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -347,7 +347,6 @@ function Profile({ navigation }) {
 
   const defaultImage = require("../assets/profile1.png");
 
-  // Fill form from Redux profile
   useEffect(() => {
     if (profile) {
       setName(profile.name || "");
@@ -360,10 +359,9 @@ function Profile({ navigation }) {
       setState(profile.state || "");
       setPincode(profile.pincode || "");
 
-      // If backend returns a URL or base64, show it
       if (profile.profile && profile.profile !== "") {
         setImageUri(profile.profile);
-        setImageBase64(""); // Don't override if it's a URL
+        setImageBase64("");
       }
     }
   }, [profile]);
@@ -374,21 +372,17 @@ function Profile({ navigation }) {
     }
   }, [dispatch, userId, profile]);
 
-  // Pick image + get base64 directly
   const pickImage = () => {
     launchImageLibrary(
       {
         mediaType: "photo",
-        includeBase64: true,        // ← This gives us base64 string!
+        includeBase64: true,
         maxWidth: 800,
         maxHeight: 800,
         quality: 0.8,
       },
       (response) => {
-        if (response.didCancel) {
-          console.log("User cancelled");
-          return;
-        }
+        if (response.didCancel) return;
         if (response.errorCode) {
           Alert.alert("Error", response.errorMessage || "Image picker failed");
           return;
@@ -397,10 +391,12 @@ function Profile({ navigation }) {
         if (response.assets && response.assets[0]) {
           const asset = response.assets[0];
           const uri = asset.uri;
-          const base64 = asset.base64 ? `data:${asset.type || 'image/jpeg'};base64,${asset.base64}` : "";
+          const base64 = asset.base64
+            ? `data:${asset.type || "image/jpeg"};base64,${asset.base64}`
+            : "";
 
-          setImageUri(uri);           // Show in UI
-          setImageBase64(base64);     // Send to backend
+          setImageUri(uri);
+          setImageBase64(base64);
         }
       }
     );
@@ -422,7 +418,6 @@ function Profile({ navigation }) {
       city,
       state,
       pincode,
-      // Only send image if user picked a new one
       ...(imageBase64 ? { image: imageBase64 } : {}),
     };
 
@@ -430,7 +425,7 @@ function Profile({ navigation }) {
       .unwrap()
       .then((res) => {
         Alert.alert("Success", res.message || "Profile updated successfully!");
-        dispatch(fetchUserProfile(userId)); // Refresh profile
+        dispatch(fetchUserProfile(userId));
       })
       .catch((err) => {
         Alert.alert("Failed", err || "Could not update profile");
@@ -454,11 +449,13 @@ function Profile({ navigation }) {
         <TouchableOpacity onPress={() => navigation?.goBack?.()}>
           <Ionicons name="chevron-back" size={26} color={PRIMARY_COLOR} />
         </TouchableOpacity>
-        <Text style={[styles.headerText, { color: PRIMARY_COLOR }]}>My Profile</Text>
+        <Text style={styles.headerText}>My Profile</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 50 }}
+      >
         {/* Profile Picture */}
         <View style={styles.avatarWrap}>
           <TouchableOpacity onPress={pickImage} activeOpacity={0.8}>
@@ -473,15 +470,28 @@ function Profile({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* All Input Fields */}
+        {/* Input Fields */}
         <Text style={styles.label}>Name</Text>
         <View style={styles.inputCard}>
-          <TextInput value={name} onChangeText={setName} style={styles.input} />
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+            placeholder="Enter your name"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>Email ID</Text>
         <View style={styles.inputCard}>
-          <TextInput value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" />
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+            keyboardType="email-address"
+            placeholder="Enter email"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>Mobile Number</Text>
@@ -491,27 +501,57 @@ function Profile({ navigation }) {
 
         <Text style={styles.label}>Date of Birth</Text>
         <View style={styles.inputCard}>
-          <TextInput value={dob} onChangeText={setDob} style={styles.input} placeholder="YYYY-MM-DD" />
+          <TextInput
+            value={dob}
+            onChangeText={setDob}
+            style={styles.input}
+            placeholder="YYYY-MM-DD"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>Gender</Text>
         <View style={styles.inputCard}>
-          <TextInput value={gender} onChangeText={setGender} style={styles.input} />
+          <TextInput
+            value={gender}
+            onChangeText={setGender}
+            style={styles.input}
+            placeholder="e.g., Male / Female / Other"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>Address</Text>
         <View style={styles.inputCard}>
-          <TextInput value={address} onChangeText={setAddress} style={styles.input} />
+          <TextInput
+            value={address}
+            onChangeText={setAddress}
+            style={styles.input}
+            placeholder="Enter address"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>City</Text>
         <View style={styles.inputCard}>
-          <TextInput value={city} onChangeText={setCity} style={styles.input} />
+          <TextInput
+            value={city}
+            onChangeText={setCity}
+            style={styles.input}
+            placeholder="Enter city"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>State</Text>
         <View style={styles.inputCard}>
-          <TextInput value={state} onChangeText={setState} style={styles.input} />
+          <TextInput
+            value={state}
+            onChangeText={setState}
+            style={styles.input}
+            placeholder="Enter state"
+            placeholderTextColor="#999"
+          />
         </View>
 
         <Text style={styles.label}>Pincode</Text>
@@ -522,6 +562,8 @@ function Profile({ navigation }) {
             style={styles.input}
             keyboardType="numeric"
             maxLength={6}
+            placeholder="Enter pincode"
+            placeholderTextColor="#999"
           />
         </View>
 
@@ -537,20 +579,50 @@ function Profile({ navigation }) {
             <Text style={styles.saveText}>Save Changes</Text>
           )}
         </TouchableOpacity>
-
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 12, fontSize: 16, color: "#555" },
-  header: { flexDirection: "row", alignItems: "center", padding: 16 },
-  headerText: { fontSize: 20, fontWeight: "700", marginLeft: 12 },
-  avatarWrap: { alignItems: "center", marginVertical: 30, position: "relative" },
-  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: "#f0ece8" },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: "#555",
+    fontFamily: "SF-Pro-Display-Medium",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+  },
+  headerText: {
+    fontSize: 20,
+    fontFamily: "SF-Pro-Display-Bold",
+    color: PRIMARY_COLOR,
+    marginLeft: 12,
+  },
+  avatarWrap: {
+    alignItems: "center",
+    marginVertical: 30,
+    position: "relative",
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 3,
+    borderColor: "#f0ece8",
+  },
   editBtn: {
     position: "absolute",
     right: width / 2 - 60,
@@ -562,7 +634,14 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     elevation: 6,
   },
-  label: { marginLeft: 25, marginTop: 18, marginBottom: 6, fontSize: 14, fontWeight: "600", color: "#555" },
+  label: {
+    marginLeft: 25,
+    marginTop: 18,
+    marginBottom: 6,
+    fontSize: 14,
+    fontFamily: "SF-Pro-Display-Semibold",
+    color: "#555",
+  },
   inputCard: {
     marginHorizontal: 20,
     backgroundColor: "#fff",
@@ -571,9 +650,24 @@ const styles = StyleSheet.create({
     borderColor: "#f0ece8",
     paddingHorizontal: 16,
   },
-  input: { fontSize: 16, color: "#222", paddingVertical: 14 },
-  saveBtn: { marginTop: 40, marginHorizontal: 20, paddingVertical: 16, borderRadius: 14, alignItems: "center" },
-  saveText: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  input: {
+    fontSize: 16,
+    color: "#222",
+    paddingVertical: 14,
+    fontFamily: "SF-Pro-Display-Medium",
+  },
+  saveBtn: {
+    marginTop: 40,
+    marginHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  saveText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "SF-Pro-Display-Bold",
+  },
 });
 
 export default Profile;

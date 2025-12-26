@@ -452,7 +452,7 @@ const MyCoupons = () => {
           paddingBottom: (Platform.OS === "ios" ? 85 : 65) + insets.bottom + 20,
         }}
       >
-        <Text style={styles.sectionTitle}>CATEGORIES</Text>
+        <Text style={styles.sectionTitle}>Categeories</Text>
 
         {/* {categoriesLoading ? (
           <ActivityIndicator size="large" color="#000" style={{ marginTop: 50 }} />
@@ -529,14 +529,16 @@ const styles = StyleSheet.create({
     marginLeft: responsiveWidth(2),
     fontSize: responsiveFontSize(1.8),
     color: "#000",
+         fontFamily:"SF-Pro-Display-Regular"
   },
   sectionTitle: {
     fontSize: responsiveFontSize(2.2),
-    fontWeight: "700",
+    // fontWeight: "700",
     marginHorizontal: responsiveWidth(4),
     marginTop: responsiveHeight(3),
     marginBottom: responsiveHeight(1),
-    color:"#000"
+    color:"#000",
+         fontFamily:"SF-Pro-Display-Medium"
   },
 
   // Category Section
@@ -570,6 +572,7 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(2),
     color: "#fff",
     fontWeight: "600",
+         fontFamily:"SF-Pro-Display-Bold"
   },
   cardsWrapper: {
     backgroundColor: "#fff",
@@ -604,10 +607,11 @@ const styles = StyleSheet.create({
     borderColor: "#000",
   },
   cardTitle: {
-    fontSize: responsiveFontSize(1.5),
-    fontWeight: "600",
+    fontSize: 12,
+    fontWeight: "400",
     color: "#000",
-    marginBottom:"5%"
+    marginBottom:"5%",
+         fontFamily:"SF-Pro-Display-Regular"
   },
   profileImage1: {
     width: 150,

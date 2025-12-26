@@ -211,6 +211,10 @@ vendorInfo: null,
 couponHistory: [],
 couponHistoryLoading: false,
 couponHistoryError: null,
+rewardsCoupons: [],
+rewardsLoading: false,
+rewardsError: null,
+totalPoints: 0,
 };
 
 
@@ -382,6 +386,78 @@ export const fetchCouponHistory = createAsyncThunk(
       return [];
     } catch (err) {
       return rejectWithValue('Failed to load history');
+    }
+  }
+);
+
+// ─────────────────────────────────────────────
+// Send Coupon Usage (after successful QR scan)
+// ─────────────────────────────────────────────
+export const recordCouponUsage = createAsyncThunk(
+  'coupons/recordCouponUsage',
+  async ({ userId, couponId }, { rejectWithValue }) => {
+    try {
+      const response = await api.post(endpoints.SEND_COUPON_USAGE, {
+        userId,
+        couponId,
+      });
+      return response.data;
+    } catch (err) {
+      console.log('❌ recordCouponUsage ERROR:', err.response?.data);
+      
+      // ✅ FIXED: Always return STRING
+      let errorMessage = 'Failed to record coupon usage';
+      
+      if (err?.response?.data) {
+        // Handle ReadableNativeMap/Object
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data?.message) {
+          errorMessage = String(err.response.data.message);
+        } else {
+          errorMessage = String(err.response.data);
+        }
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
+      return rejectWithValue(errorMessage); // Always STRING
+    }
+  }
+);
+export const fetchRewardsCoupons = createAsyncThunk(
+  'rewards/fetchRewardsCoupons',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`rewardshistory/${userId}`);
+      
+      if (response.data.status) {
+        return response.data.data; // array of redeemable coupons
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to fetch rewards');
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Failed to load rewards';
+      return rejectWithValue(msg);
+    }
+  }
+);
+export const fetchRedeemableCoupons = createAsyncThunk(
+  'auth/fetchRedeemableCoupons',
+  async (points, { rejectWithValue }) => {
+    if (!points || points <= 0) {
+      return rejectWithValue('Please enter valid points');
+    }
+    try {
+      const response = await api.get(`rewardsbypoints/${points}`);
+      if (response.data.status) {
+        return response.data.data; // array of available coupons
+      } else {
+        return rejectWithValue(response.data.message || 'No coupons available');
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Failed to fetch coupons';
+      return rejectWithValue(msg);
     }
   }
 );
@@ -575,6 +651,46 @@ const AuthSlice = createSlice({
   state.couponHistoryLoading = false;
   state.couponHistoryError = action.payload;
   state.couponHistory = [];
+})
+   .addCase(recordCouponUsage.pending, (state) => {
+        state.loading = true; // reuse existing loading or add a specific one
+      })
+      .addCase(recordCouponUsage.fulfilled, (state, action) => {
+        state.loading = false;
+        state.message = action.payload?.message || 'Coupon applied successfully';
+      })
+      .addCase(recordCouponUsage.rejected, (state, action) => {
+        state.loading = false;
+        state.message = action.payload || 'Failed to apply coupon';
+      })
+      .addCase(fetchRewardsCoupons.pending, (state) => {
+  state.rewardsLoading = true;
+  state.rewardsError = null;
+})
+.addCase(fetchRewardsCoupons.fulfilled, (state, action) => {
+  state.rewardsLoading = false;
+  state.rewardsCoupons = action.payload || [];
+
+  // Optional: If backend sends total points in response, use it
+  // Otherwise keep it from profile
+})
+.addCase(fetchRewardsCoupons.rejected, (state, action) => {
+  state.rewardsLoading = false;
+  state.rewardsError = action.payload;
+  state.rewardsCoupons = [];
+})
+.addCase(fetchRedeemableCoupons.pending, (state) => {
+  state.couponsLoading = true; // reuse or create redeemableLoading if needed
+  state.couponsError = null;
+})
+.addCase(fetchRedeemableCoupons.fulfilled, (state, action) => {
+  state.couponsLoading = false;
+  state.coupons = action.payload || []; // we'll use state.coupons for this list
+})
+.addCase(fetchRedeemableCoupons.rejected, (state, action) => {
+  state.couponsLoading = false;
+  state.couponsError = action.payload;
+  state.coupons = [];
 })
   },
 });

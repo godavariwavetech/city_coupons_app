@@ -10,8 +10,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  ActivityIndicator,
+  ActivityIndicator,Alert
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -21,7 +20,7 @@ import {
 } from "react-native-responsive-dimensions";
 import CustomModal from "../components/CustomModal";
 import { useDispatch, useSelector } from "react-redux";
-import { requestLoginOtp, resetOtpState } from "../redux/reducers/auth"; // adjust path
+import { requestLoginOtp, resetOtpState } from "../redux/reducers/auth";
 
 const LoginScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
@@ -34,42 +33,30 @@ const LoginScreen = ({ navigation }) => {
     (state) => state.Auth
   );
 
-  // Reset state when screen mounts
   useEffect(() => {
     dispatch(resetOtpState());
   }, [dispatch]);
 
-  // Watch for successful OTP request and navigate accordingly
-  // useEffect(() => {
-  //   if (otpRequestSuccess) {
-  //    navigation.navigate("OtpVerificationScreen", { 
-  //     mobile: phone  // This is the key fix!
-  //   });
-  //   } else if (isNewUser) {
-  //     Alert.alert("New User", message || "New User - Register First", [
-  //       { text: "OK", onPress: () => navigation.navigate("RegisterManuallyScreen") },
-  //     ]);
-  //   }
-  // }, [otpRequestSuccess, isNewUser, navigation, message]);
-useEffect(() => {
-  if (otpRequestSuccess) {
-    if (isNewUser) {
-      Alert.alert(
-        "Welcome!",
-        message || "Please register to continue.",
-        [
-          {
-            text: "Register",
-            onPress: () => navigation.navigate("RegisterManuallyScreen"),
-          },
-        ],
-        { cancelable: false }
-      );
-    } else {
-      navigation.navigate("OtpVerificationScreen", { mobile: phone });
+  useEffect(() => {
+    if (otpRequestSuccess) {
+      if (isNewUser) {
+        Alert.alert(
+          "Welcome!",
+          message || "Please register to continue.",
+          [
+            {
+              text: "Register",
+              onPress: () => navigation.navigate("RegisterManuallyScreen"),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        navigation.navigate("OtpVerificationScreen", { mobile: phone });
+      }
     }
-  }
-}, [otpRequestSuccess, isNewUser, message, navigation, phone]);
+  }, [otpRequestSuccess, isNewUser, message, navigation, phone]);
+
   const validatePhone = (phoneNumber) => {
     const digitsOnly = phoneNumber.replace(/\D/g, "");
     if (digitsOnly.length !== 10) {
@@ -79,7 +66,6 @@ useEffect(() => {
   };
 
   const handleLogin = async () => {
-    console.log("Login button pressed, phone:", phone);
     const error = validatePhone(phone);
     if (error) {
       setErrorMessage(error);
@@ -87,7 +73,6 @@ useEffect(() => {
       return;
     }
 
-    // Dispatch OTP request
     dispatch(requestLoginOtp(phone));
   };
 
@@ -156,11 +141,19 @@ useEffect(() => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", justifyContent: "center" },
-  innerContainer: { flex: 1, alignItems: "center", justifyContent: "center" },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+  },
+  innerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   welcomeText: {
     fontSize: responsiveFontSize(2.3),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
     color: "#7a7a7a",
     marginBottom: responsiveHeight(2),
   },
@@ -183,10 +176,16 @@ const styles = StyleSheet.create({
   },
   countryCode: {
     fontSize: responsiveFontSize(2),
+    fontFamily: "SF-Pro-Display-Medium",
     color: "#555",
     marginRight: responsiveWidth(2),
   },
-  input: { flex: 1, fontSize: responsiveFontSize(2), color: "#000" },
+  input: {
+    flex: 1,
+    fontSize: responsiveFontSize(2),
+    color: "#000",
+    fontFamily: "SF-Pro-Display-Medium",
+  },
   loginButton: {
     backgroundColor: "#001D4A",
     width: responsiveWidth(40),
@@ -202,6 +201,342 @@ const styles = StyleSheet.create({
   loginText: {
     color: "#fff",
     fontSize: responsiveFontSize(2),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Bold",
   },
 });
+
+
+
+
+
+
+// import React from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   TouchableOpacity,
+//   StatusBar,
+//   ScrollView,
+//   TextInput,
+// } from 'react-native';
+// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+// import {
+//   responsiveWidth as rw,
+//   responsiveHeight as rh,
+//   responsiveFontSize as rf,
+// } from 'react-native-responsive-dimensions';
+// import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// const customers = [
+//   {
+//     name: 'Sai Kirana Store',
+//     statusColor: '#2ECC71',
+//     amount: '₹2,300',
+//   },
+//   {
+//     name: 'Annapurna General Store',
+//     statusColor: '#FBC02D',
+//     amount: '₹4,500',
+//   },
+//   {
+//     name: 'Sri Venkateswara Traders',
+//     statusColor: '#E53935',
+//     amount: '₹1,500',
+//   },
+//   {
+//     name: 'Lakshmi Provisions',
+//     statusColor: '#2ECC71',
+//     amount: '₹3,200',
+//   },
+//   {
+//     name: 'Krishna Enterprises',
+//     statusColor: '#2ECC71',
+//     amount: '₹2,800',
+//   },
+// ];
+
+// const CustomerList = () => {
+//   const insets = useSafeAreaInsets();
+
+//   return (
+//     <View style={[styles.container, { paddingTop: insets.top }]}>
+//       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
+//       {/* HEADER */}
+//       <View style={styles.header}>
+//         <TouchableOpacity>
+//           <Icon name="arrow-left" size={rf(2.5)} color="#000" />
+//         </TouchableOpacity>
+//         <Text style={styles.headerTitle}>Customer List</Text>
+//         <View style={{ width: 24 }} />
+//       </View>
+
+//       <ScrollView contentContainerStyle={styles.content}>
+
+//         {/* SEARCH */}
+//         <View style={styles.searchBox}>
+//           <Icon name="magnify" size={rf(2.2)} color="#999" />
+//           <TextInput
+//             placeholder="Search customers..."
+//             placeholderTextColor="#000"
+//             style={styles.searchInput}
+//           />
+//         </View>
+
+//         {/* FILTER BADGES */}
+//         <View style={styles.filterRow}>
+//           <View style={styles.filterBadge}>
+//             <View style={[styles.filterDot, { backgroundColor: '#2ECC71' }]} />
+//             <Text style={styles.filterText}>36</Text>
+//           </View>
+
+//           <View style={styles.filterBadge}>
+//             <View style={[styles.filterDot, { backgroundColor: '#FBC02D' }]} />
+//             <Text style={styles.filterText}>36</Text>
+//           </View>
+
+//           <View style={styles.filterBadge}>
+//             <View style={[styles.filterDot, { backgroundColor: '#E53935' }]} />
+//             <Text style={styles.filterText}>36</Text>
+//           </View>
+//         </View>
+
+//         {/* CUSTOMER LIST */}
+//         {customers.map((item, index) => (
+//           <View key={index} style={styles.customerCard}>
+
+//             {/* TOP ROW */}
+//             <View style={styles.topRow}>
+//               <View style={styles.leftTop}>
+//                 <View
+//                   style={[
+//                     styles.statusDot,
+//                     { backgroundColor: item.statusColor },
+//                   ]}
+//                 />
+//                 <Text style={styles.storeName}>{item.name}</Text>
+//               </View>
+
+//               <View style={styles.rightTop}>
+//                 <Text style={styles.cityText}>Hyd</Text>
+//                 <View style={styles.pendingBadge}>
+//                   <Text style={styles.pendingText}>Pending</Text>
+//                 </View>
+//               </View>
+//             </View>
+
+//             {/* PHONE */}
+//             <Text style={styles.phoneText}>9663474733</Text>
+
+//             {/* LOCATION */}
+//             <View style={styles.locationRow}>
+//               <Icon name="map-marker-outline" size={rf(2)} color="#E53935" />
+//               <Text style={styles.locationText}>Ameerpet (Route b)</Text>
+//             </View>
+
+//             {/* OUTSTANDING */}
+//             <Text style={styles.outstandingText}>
+//               ₹ Outstanding: {item.amount}
+//             </Text>
+
+//             {/* ACTIONS */}
+//             <View style={styles.actionRow}>
+//               <TouchableOpacity style={styles.visitBtn}>
+//                 <Text style={styles.visitText}>Visit</Text>
+//               </TouchableOpacity>
+
+//               <TouchableOpacity style={styles.callBtn}>
+//                 <Icon name="phone" size={rf(2.3)} color="#2ECC71" />
+//               </TouchableOpacity>
+//             </View>
+
+//           </View>
+//         ))}
+//       </ScrollView>
+//     </View>
+//   );
+// };
+
+// export default CustomerList;
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: '#F6F6F6',
+//   },
+
+//   header: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     padding: rw(4),
+//     backgroundColor: '#fff',
+//     elevation: 3,
+//   },
+
+//   headerTitle: {
+//     flex: 1,
+//     textAlign: 'center',
+//     fontSize: rf(2.2),
+//     fontWeight: '600',
+//     color:"#000"
+//   },
+
+//   content: {
+//     padding: rw(4),
+//   },
+
+//   searchBox: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     backgroundColor: '#fff',
+//     borderRadius: 10,
+//     paddingHorizontal: rw(3),
+//     height: rh(5.5),
+//     elevation: 2,
+//   },
+
+//   searchInput: {
+//     flex: 1,
+//     fontSize: rf(1.6),
+//     marginLeft: rw(2),
+//   },
+
+//   filterRow: {
+//     flexDirection: 'row',
+//     marginVertical: rh(2),
+//     justifyContent:"center"
+//   },
+
+//   filterBadge: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     backgroundColor: '#fff',
+//     paddingHorizontal: rw(4),
+//     paddingVertical: rh(0.8),
+//     borderRadius: 20,
+//     marginRight: rw(3),
+//     elevation: 2,
+//   },
+
+//   filterDot: {
+//     width: rw(2),
+//     height: rw(2),
+//     borderRadius: rw(1),
+//     marginRight: rw(2),
+//   },
+
+//   filterText: {
+//     fontSize: rf(1.6),
+//     fontWeight: '600',
+//     color:"#000"
+//   },
+
+//   customerCard: {
+//     backgroundColor: '#fff',
+//     borderRadius: 14,
+//     padding: rw(4),
+//     marginBottom: rh(2),
+//     elevation: 3,
+//   },
+
+//   topRow: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//   },
+
+//   leftTop: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//   },
+
+//   statusDot: {
+//     width: rw(2),
+//     height: rw(2),
+//     borderRadius: rw(1),
+//     marginRight: rw(2),
+//   },
+
+//   storeName: {
+//     fontSize: rf(1.9),
+//     fontWeight: '600',
+//     color:"#000"
+//   },
+
+//   rightTop: {
+//     alignItems: 'flex-end',
+//   },
+
+//   cityText: {
+//     fontSize: rf(1.6),
+//     color: '#666',
+//   },
+
+//   pendingBadge: {
+//     backgroundColor: '#FFF3E0',
+//     paddingHorizontal: rw(3),
+//     paddingVertical: rh(0.3),
+//     borderRadius: 8,
+//     marginTop: rh(0.4),
+//   },
+
+//   pendingText: {
+//     color: '#FB8C00',
+//     fontSize: rf(1.4),
+//   },
+
+//   phoneText: {
+//     fontSize: rf(1.6),
+//     color: '#555',
+//     marginTop: rh(0.8),
+//   },
+
+//   locationRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginTop: rh(0.6),
+//   },
+
+//   locationText: {
+//     fontSize: rf(1.6),
+//     marginLeft: rw(1),
+//     color: '#555',
+//   },
+
+//   outstandingText: {
+//     marginTop: rh(0.8),
+//     fontSize: rf(1.7),
+//     fontWeight: '600',
+//     color: '#E53935',
+//   },
+
+//   actionRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginTop: rh(1.2),
+//   },
+
+//   visitBtn: {
+//     flex: 1,
+//     backgroundColor: '#F44336',
+//     height: rh(5),
+//     borderRadius: 10,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     marginRight: rw(3),
+//   },
+
+//   visitText: {
+//     color: '#fff',
+//     fontSize: rf(1.8),
+//     fontWeight: '600',
+//   },
+
+//   callBtn: {
+//     width: rw(12),
+//     height: rw(12),
+//     borderRadius: rw(6),
+//     backgroundColor: '#E8F5E9',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//   },
+// });

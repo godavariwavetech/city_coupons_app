@@ -229,7 +229,6 @@ const RestaurantsListScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // Receive data from HomeScreen
   const { categoryName = "Category", stores = [] } = route.params || {};
 
   const [favorited, setFavorited] = useState(new Set());
@@ -270,7 +269,6 @@ const RestaurantsListScreen = () => {
         <TouchableOpacity
           style={styles.itemLeft}
           onPress={() => {
-            // CORRECT: Pass only vendorId
             navigation.navigate("CouponsListScreen", {
               vendorId: item.vendorId,
             });
@@ -288,6 +286,7 @@ const RestaurantsListScreen = () => {
           </View>
         </TouchableOpacity>
 
+        {/* Uncomment if you want to re-enable favorite button */}
         {/* <TouchableOpacity
           style={styles.heartButton}
           onPress={() => toggleFavorite(item.vendorId)}
@@ -321,7 +320,7 @@ const RestaurantsListScreen = () => {
           <Text style={styles.headerTitle} numberOfLines={1}>
             {categoryName}
           </Text>
-          <Ionicons name="chevron-down" size={18} color="#000" style={{ marginLeft: 6 }} />
+          {/* <Ionicons name="chevron-down" size={18} color="#000" style={{ marginLeft: 6 }} /> */}
         </View>
 
         <View style={{ width: 26 }} />
@@ -337,8 +336,8 @@ const RestaurantsListScreen = () => {
           paddingBottom: responsiveHeight(6),
         }}
         ListEmptyComponent={
-          <View style={{ padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: responsiveFontSize(2), color: '#999' }}>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
               No stores found in this category
             </Text>
           </View>
@@ -374,7 +373,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: responsiveFontSize(2.4),
-    fontWeight: "700",
+    fontFamily: "SF-Pro-Display-Bold",
     color: "#000",
     maxWidth: responsiveWidth(65),
   },
@@ -404,17 +403,26 @@ const styles = StyleSheet.create({
   },
   restaurantName: {
     fontSize: responsiveFontSize(2.1),
-    fontWeight: "600",
+    fontFamily: "SF-Pro-Display-Semibold",
     color: "#000",
     marginBottom: 4,
   },
   subText: {
     fontSize: responsiveFontSize(1.7),
+    fontFamily: "SF-Pro-Display-Medium",
     color: "#16A34A",
-    fontWeight: "600",
   },
   heartButton: {
     padding: responsiveWidth(3),
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: responsiveFontSize(2),
+    fontFamily: "SF-Pro-Display-Medium",
+    color: "#999",
   },
 });
 
