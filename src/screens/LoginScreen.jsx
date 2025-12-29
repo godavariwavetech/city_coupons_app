@@ -52,7 +52,7 @@ const LoginScreen = ({ navigation }) => {
           { cancelable: false }
         );
       } else {
-        navigation.navigate("OtpVerificationScreen", { mobile: phone });
+        navigation.replace("OtpVerificationScreen", { mobile: phone });
       }
     }
   }, [otpRequestSuccess, isNewUser, message, navigation, phone]);

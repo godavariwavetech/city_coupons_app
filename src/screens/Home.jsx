@@ -512,16 +512,42 @@ const Home = ({ navigation, route }) => {
     coupons,
     couponsLoading,
     couponsError,
+    userId
   } = useSelector((state) => state.Auth);
 
   // Combined refresh function (used for both mount & pull-to-refresh)
+  // const loadData = useCallback(async () => {
+  //   await Promise.all([
+  //     dispatch(fetchTrendingCoupons()),
+  //     dispatch(fetchAllCoupons()),
+  //   ]);
+  // }, [dispatch]);
+// Combined refresh function — now passes userId
   const loadData = useCallback(async () => {
-    await Promise.all([
-      dispatch(fetchTrendingCoupons()),
-      dispatch(fetchAllCoupons()),
-    ]);
-  }, [dispatch]);
+    if (!userId) {
+      console.warn('No userId, cannot fetch coupons');
+      return;
+    }
 
+    await Promise.all([
+      dispatch(fetchTrendingCoupons(userId)),
+      dispatch(fetchAllCoupons(userId)),
+    ]);
+  }, [dispatch, userId]);
+
+  // Initial load
+  useEffect(() => {
+    if (isFocused && userId) {
+      loadData();
+    }
+  }, [isFocused, loadData, userId]);
+
+  // Pull-to-refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
   // Initial load when screen comes into focus
   useEffect(() => {
     if (isFocused) {
@@ -538,14 +564,14 @@ const Home = ({ navigation, route }) => {
   }, [route.params?.openScanner]);
 
   // Pull-to-refresh handler
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      await loadData();
-    } finally {
-      setRefreshing(false);
-    }
-  }, [loadData]);
+  // const onRefresh = useCallback(async () => {
+  //   setRefreshing(true);
+  //   try {
+  //     await loadData();
+  //   } finally {
+  //     setRefreshing(false);
+  //   }
+  // }, [loadData]);
 
   const toggleFavorite = (id) => {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -556,89 +582,202 @@ const Home = ({ navigation, route }) => {
   };
 
   // Trending Coupon Card
-  const renderTrendingCard = ({ item }) => {
-    const isFav = favorites[item.couponId];
+  // const renderTrendingCard = ({ item }) => {
+  //   const isFav = favorites[item.couponId];
 
-    return (
-      <TouchableOpacity style={styles.offerCard} onPress={() => handleCardPress(item)}>
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: item.shopImage }}
-            style={styles.offerImage}
-            resizeMode="cover"
-            // defaultSource={require('../assets/profile1.png')}
-          />
-          <Image
-            source={{ uri: item.vendorLogo }}
-            style={styles.logoOverlay}
-            resizeMode="cover"
-            // defaultSource={require('../assets/profile1.png')}
-          />
-        </View>
+  //   return (
+  //     <TouchableOpacity style={styles.offerCard} onPress={() => handleCardPress(item)}>
+  //       <View style={styles.imageContainer}>
+  //         <Image
+  //           source={{ uri: item.shopImage }}
+  //           style={styles.offerImage}
+  //           resizeMode="cover"
+  //           // defaultSource={require('../assets/profile1.png')}
+  //         />
+  //         <Image
+  //           source={{ uri: item.vendorLogo }}
+  //           style={styles.logoOverlay}
+  //           resizeMode="cover"
+  //           // defaultSource={require('../assets/profile1.png')}
+  //         />
+  //         {/* USED Badge */}
+  //     {item.isUsed === 1 && (
+  //       <View style={styles.usedOverlay}>
+  //         <Text style={styles.usedText}>USED</Text>
+  //       </View>
+  //     )}
+  //       </View>
 
-        <View style={styles.offerContent}>
-          <View style={styles.offerHeader}>
-            <Text style={styles.offerTitle} numberOfLines={1}>
-              {item.couponName}
-            </Text>
-            {/* <TouchableOpacity onPress={() => toggleFavorite(item.couponId)}>
-              <Feather
-                name="heart"
-                size={18}
-                color={isFav ? '#E91E63' : '#666666'}
-              />
-            </TouchableOpacity> */}
+  //       <View style={styles.offerContent}>
+  //         <View style={styles.offerHeader}>
+  //           <Text style={styles.offerTitle} numberOfLines={1}>
+  //             {item.couponName}
+  //           </Text>
+  //           {/* <TouchableOpacity onPress={() => toggleFavorite(item.couponId)}>
+  //             <Feather
+  //               name="heart"
+  //               size={18}
+  //               color={isFav ? '#E91E63' : '#666666'}
+  //             />
+  //           </TouchableOpacity> */}
+  //         </View>
+  //         <Text style={styles.offerSubtitle} numberOfLines={2}>
+  //           {item.title}
+  //         </Text>
+  //         <Text style={styles.offerPrice}>Code: {item.couponCode}</Text>
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // }; 
+const renderTrendingCard = ({ item }) => {
+  const isUsed = item.isUsed === 1;
+
+  return (
+    <View style={[styles.offerCard, isUsed && styles.disabledContent]}>
+      {/* Wrap TouchableOpacity only if not used */}
+      {isUsed ? (
+        // Non-tappable view when used
+        <View>
+          {/* Content same as before */}
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: item.shopImage }} style={styles.offerImage} resizeMode="cover" />
+            <Image source={{ uri: item.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
+            {isUsed && (
+              <View style={styles.usedOverlay}>
+                <Text style={styles.usedText}>USED</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.offerSubtitle} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Text style={styles.offerPrice}>Code: {item.couponCode}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
 
+          <View style={styles.offerContent}>
+            <View style={styles.offerHeader}>
+              <Text style={styles.offerTitle} numberOfLines={1}>
+                {item.couponName}
+              </Text>
+            </View>
+            <Text style={styles.offerSubtitle} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.offerPrice}>Code: {item.couponCode}</Text>
+          </View>
+        </View>
+      ) : (
+        // Tappable when not used
+        <TouchableOpacity onPress={() => handleCardPress(item)}>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: item.shopImage }} style={styles.offerImage} resizeMode="cover" />
+            <Image source={{ uri: item.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
+          </View>
+
+          <View style={styles.offerContent}>
+            <View style={styles.offerHeader}>
+              <Text style={styles.offerTitle} numberOfLines={1}>
+                {item.couponName}
+              </Text>
+            </View>
+            <Text style={styles.offerSubtitle} numberOfLines={2}>
+              {item.title}
+            </Text>
+            <Text style={styles.offerPrice}>Code: {item.couponCode}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
   // Regular Coupon Card
-  const renderCouponCard = (coupon) => {
-    const isFav = favorites[coupon.couponId];
+  // const renderCouponCard = (coupon) => {
+  //   const isFav = favorites[coupon.couponId];
 
-    return (
-      <TouchableOpacity
-        key={coupon.couponId}
-        style={styles.couponCard}
-        onPress={() => handleCardPress(coupon)}
-      >
-        <View style={styles.imageContainer}>
-          <Image
-            source={{ uri: coupon.shopImage }}
-            style={styles.couponImage}
-            resizeMode="cover"
-            // defaultSource={require('../assets/profile1.png')}
-          />
-          <Image
-            source={{ uri: coupon.vendorLogo }}
-            style={styles.logoOverlay}
-            resizeMode="cover"
-          />
-        </View>
-        <View style={styles.couponContent}>
-          <View style={styles.couponHeader}>
-            <Text style={styles.couponTitle} numberOfLines={1}>
-              {coupon.couponName}
-            </Text>
-            {/* <TouchableOpacity onPress={() => toggleFavorite(coupon.couponId)}>
-              <Feather name="heart" size={18} color={isFav ? '#E91E63' : '#666666'} />
-            </TouchableOpacity> */}
+  //   return (
+  //     <TouchableOpacity
+  //       key={coupon.couponId}
+  //       style={styles.couponCard}
+  //       onPress={() => handleCardPress(coupon)}
+  //     >
+  //       <View style={styles.imageContainer}>
+  //         <Image
+  //           source={{ uri: coupon.shopImage }}
+  //           style={styles.couponImage}
+  //           resizeMode="cover"
+  //           // defaultSource={require('../assets/profile1.png')}
+  //         />
+  //         <Image
+  //           source={{ uri: coupon.vendorLogo }}
+  //           style={styles.logoOverlay}
+  //           resizeMode="cover"
+  //         />
+  //       </View>
+  //       <View style={styles.couponContent}>
+  //         <View style={styles.couponHeader}>
+  //           <Text style={styles.couponTitle} numberOfLines={1}>
+  //             {coupon.couponName}
+  //           </Text>
+  //           {/* <TouchableOpacity onPress={() => toggleFavorite(coupon.couponId)}>
+  //             <Feather name="heart" size={18} color={isFav ? '#E91E63' : '#666666'} />
+  //           </TouchableOpacity> */}
+  //         </View>
+  //         <Text style={styles.couponSubtitle} numberOfLines={2}>
+  //           {coupon.title}
+  //         </Text>
+  //         <Text style={styles.couponCodeText}>Code: {coupon.couponCode}</Text>
+  //       </View>
+  //     </TouchableOpacity>
+  //   );
+  // };
+const renderCouponCard = (coupon) => {
+  const isUsed = coupon.isUsed === 1;
+
+  return (
+    <View
+      key={coupon.couponId}
+      style={[styles.couponCard, isUsed && styles.disabledContent]}
+    >
+      {isUsed ? (
+        <View>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: coupon.shopImage }} style={styles.couponImage} resizeMode="cover" />
+            <Image source={{ uri: coupon.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
+            {isUsed && (
+              <View style={styles.usedOverlay}>
+                <Text style={styles.usedText}>USED</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.couponSubtitle} numberOfLines={2}>
-            {coupon.title}
-          </Text>
-          <Text style={styles.couponCodeText}>Code: {coupon.couponCode}</Text>
+          <View style={styles.couponContent}>
+            <View style={styles.couponHeader}>
+              <Text style={styles.couponTitle} numberOfLines={1}>
+                {coupon.couponName}
+              </Text>
+            </View>
+            <Text style={styles.couponSubtitle} numberOfLines={2}>
+              {coupon.title}
+            </Text>
+            <Text style={styles.couponCodeText}>Code: {coupon.couponCode}</Text>
+          </View>
         </View>
-      </TouchableOpacity>
-    );
-  };
-
+      ) : (
+        <TouchableOpacity onPress={() => handleCardPress(coupon)}>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: coupon.shopImage }} style={styles.couponImage} resizeMode="cover" />
+            <Image source={{ uri: coupon.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
+          </View>
+          <View style={styles.couponContent}>
+            <View style={styles.couponHeader}>
+              <Text style={styles.couponTitle} numberOfLines={1}>
+                {coupon.couponName}
+              </Text>
+            </View>
+            <Text style={styles.couponSubtitle} numberOfLines={2}>
+              {coupon.title}
+            </Text>
+            <Text style={styles.couponCodeText}>Code: {coupon.couponCode}</Text>
+          </View>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
   return (
     <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
@@ -687,7 +826,7 @@ const Home = ({ navigation, route }) => {
           )}
         </View>
 
-        {trendingLoading && !refreshing ? (
+        {/* {trendingLoading && !refreshing ? (
           <TrendingSkeleton />
         ) : trendingCoupons.length > 0 ? (
           <FlatList
@@ -702,8 +841,23 @@ const Home = ({ navigation, route }) => {
           <Text style={{ paddingHorizontal: 20, color: '#666', marginBottom: 20 , fontFamily:"SF-Pro-Display-Regular"}}>
             No trending offers right now
           </Text>
-        )}
-
+        )} */}
+{trendingLoading && !refreshing ? (
+  <TrendingSkeleton />
+) : trendingCoupons.length > 0 ? (
+  <FlatList
+    data={trendingCoupons}
+    renderItem={renderTrendingCard}
+    keyExtractor={(item) => item.couponId.toString()}
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.offersList}
+  />
+) : (
+  <Text style={{ paddingHorizontal: 20, color: '#666', marginBottom: 20, fontFamily: "SF-Pro-Display-Regular" }}>
+    No trending offers right now
+  </Text>
+)}
         {/* Coupon Store */}
         <View style={[styles.sectionHeader, { marginTop: 24 }]}>
           <View>
@@ -714,7 +868,7 @@ const Home = ({ navigation, route }) => {
           </TouchableOpacity> */}
         </View>
 
-        {couponsLoading && !refreshing ? (
+        {/* {couponsLoading && !refreshing ? (
           <CouponGridSkeleton />
         ) : couponsError ? (
           <Text style={{ textAlign: 'center', color: 'red', padding: 20 }}>
@@ -728,7 +882,22 @@ const Home = ({ navigation, route }) => {
           <Text style={{ textAlign: 'center', color: '#666', padding: 40 }}>
             No coupons available
           </Text>
-        )}
+        )} */}
+   {couponsLoading && !refreshing ? (
+  <CouponGridSkeleton />
+) : couponsError ? (
+  <Text style={{ textAlign: 'center', color: 'red', padding: 20 }}>
+    {couponsError}
+  </Text>
+) : coupons.length > 0 ? (
+  <View style={styles.couponGrid}>
+    {coupons.map(renderCouponCard)}
+  </View>
+) : (
+  <Text style={{ textAlign: 'center', color: '#666', padding: 40 }}>
+    No coupons available
+  </Text>
+)}
       </ScrollView>
 
       <QRScannerModal
@@ -772,6 +941,26 @@ const styles = StyleSheet.create({
   couponTitle: { fontSize: 14, fontWeight: '600', color: '#000000', flex: 1, fontFamily:"SF-Pro-Display-Bold" },
   couponSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4,     fontFamily:"SF-Pro-Display-Regular" },
   couponCodeText: { fontSize: 13, fontWeight: '600', color: '#000000',     fontFamily:"SF-Pro-Display-Semibold" },
+  usedOverlay: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0,0,0,0.6)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: 12,
+},
+usedText: {
+  color: '#e61414ff',
+  fontSize: 18,
+  fontWeight: 'bold',
+  fontFamily: 'SF-Pro-Display-Bold',
+},
+disabledContent: {
+  opacity: 0.6,
+},
 });
 
 export default Home; 

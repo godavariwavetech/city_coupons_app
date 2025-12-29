@@ -300,28 +300,61 @@ const Rewards = ({ navigation }) => {
     setPointsInput(''); // clear previous input
   };
 
-  const handleSubmitPoints = () => {
-    const enteredPoints = parseInt(pointsInput, 10);
+  // const handleSubmitPoints = () => {
+  //   const enteredPoints = parseInt(pointsInput, 10);
 
-    if (isNaN(enteredPoints) || enteredPoints <= 0) {
-      Alert.alert('Invalid Input', 'Please enter a valid number of points greater than 0.');
-      return;
-    }
+  //   if (isNaN(enteredPoints) || enteredPoints <= 0) {
+  //     Alert.alert('Invalid Input', 'Please enter a valid number of points greater than 0.');
+  //     return;
+  //   }
 
-    if (enteredPoints > totalPoints) {
-      Alert.alert(
-        'Insufficient Points',
-        `You only have ${totalPoints} points available.\nYou cannot redeem ${enteredPoints} points.`
-      );
-      return;
-    }
+  //   if (enteredPoints > totalPoints) {
+  //     Alert.alert(
+  //       'Insufficient Points',
+  //       `You only have ${totalPoints} points available.\nYou cannot redeem ${enteredPoints} points.`
+  //     );
+  //     return;
+  //   }
 
-    // Valid → close modal and navigate
-    setModalVisible(false);
-    setPointsInput('');
-    navigation.navigate('RedeemCouponsScreen', { pointsEntered: enteredPoints });
-  };
+  //   // Valid → close modal and navigate
+  //   setModalVisible(false);
+  //   setPointsInput('');
+  //   console.log(enteredPoints,"poits entered by user+++++++++++")
+  //   navigation.navigate('RedeemCouponsScreen', { pointsEntered: enteredPoints });
+  // };
+const handleSubmitPoints = () => {
+  const enteredPoints = parseInt(pointsInput, 10);
 
+  if (isNaN(enteredPoints) || enteredPoints <= 0) {
+    Alert.alert('Invalid Input', 'Please enter a valid number of points greater than 0.');
+    return;
+  }
+
+  if (enteredPoints > totalPoints) {
+    Alert.alert(
+      'Insufficient Points',
+      `You only have ${totalPoints} points available.\nYou cannot redeem ${enteredPoints} points.`
+    );
+    return;
+  }
+
+  // ADD THESE LOGS
+  console.log('About to dispatch fetchRedeemableCoupons');
+  console.log('userId:', userId);
+  console.log('pointsEntered:', enteredPoints);
+  console.log('Type of userId:', typeof userId);
+  console.log('Type of pointsEntered:', typeof enteredPoints);
+
+  if (!userId) {
+    Alert.alert('Error', 'User not logged in. Please restart the app.');
+    return;
+  }
+
+  setModalVisible(false);
+  setPointsInput('');
+
+  navigation.navigate('RedeemCouponsScreen', { pointsEntered: enteredPoints });
+};
   const renderRedeemedCoupon = ({ item }) => {
     const usedDate = new Date(item.usedDate);
     

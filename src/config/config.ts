@@ -7,7 +7,7 @@ export const endpoints = {
   USER_VERIFICATION: "user/verification",
   GET_USER_PROFILE: "user", 
   GET_CATEGORIES_WITH_VENDORS:"categoryswithvendors",
-  GET_COUPONS:"coupons",
+  GET_COUPONS:"homecoupons",
   GET_TRENDING_COUPONS:"trendingcoupons",
   SEND_COUPON_USAGE:"couponsusage"
 };

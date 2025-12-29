@@ -560,7 +560,9 @@ const onSuccess = async (e) => {
     try {
       const result = await dispatch(recordCouponUsage({
         userId: userId,
-        couponId: coupon.couponId
+        couponId: coupon.couponId,
+        couponType:coupon.couponType,
+        rewardPoints:coupon.rewardPoints
       })).unwrap();
 
       console.log('✅ Coupon usage recorded:', result);

@@ -243,10 +243,13 @@ export const requestLoginOtp = createAsyncThunk(
 // ─────────────────────────────────────────────
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
-  async (userData, { rejectWithValue }) => {
+  async (payload, { rejectWithValue }) => {
     try {
-      const response = await api.post(endpoints.USER_REGISTRATION, userData);
+      console.log(payload,"for registration")
+      const response = await api.post(endpoints.USER_REGISTRATION, payload);
+        console.log(response,"registration response")
       return response.data;
+    
     } catch (err) {
       const msg =
         err?.response?.data?.message || err.message || 'Registration Failed';
@@ -313,31 +316,48 @@ export const fetchCategoriesWithVendors = createAsyncThunk(
   }
 );
 
-// Add this inside your slice file (after fetchCategoriesWithVendors)
+
 export const fetchAllCoupons = createAsyncThunk(
   'home/fetchAllCoupons',
-  async (_, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
+    if (!userId) {
+      return rejectWithValue('User not logged in');
+    }
+
     try {
-      const response = await api.get(endpoints.GET_COUPONS);
-      return response.data.data; // returns the array of coupons
+      const response = await api.get(`/homecoupons/${userId}`);
+      console.log('All Coupons Response:', response.data); // Debug
+
+      // Adjust based on your actual backend response
+      return response.data.data || response.data || [];
     } catch (err) {
+      console.log('All Coupons Error:', err.response?.data);
       const msg = err?.response?.data?.message || 'Failed to load coupons';
       return rejectWithValue(msg);
     }
   }
 );
+
+
 export const fetchTrendingCoupons = createAsyncThunk(
   'home/fetchTrendingCoupons',
-  async (_, { rejectWithValue }) => {
+  async (userId, { rejectWithValue }) => {
+    if (!userId) {
+      return rejectWithValue('User not logged in');
+    }
+
     try {
-      const response = await api.get(endpoints.GET_TRENDING_COUPONS);
-      return response.data.data; // array of trending coupons
+      const response = await api.get(`/trendingcoupons/${userId}`);
+      console.log('Trending Coupons Response:', response.data); // Debug
+
+      return response.data.data || response.data || [];
     } catch (err) {
+      console.log('Trending Coupons Error:', err.response?.data);
       const msg = err?.response?.data?.message || 'Failed to load trending offers';
       return rejectWithValue(msg);
     }
   }
-)
+);
 export const fetchVendorCoupons = createAsyncThunk(
   'vendor/fetchVendorCoupons',
   async ({ userId, vendorId }, { rejectWithValue }) => {
@@ -346,7 +366,7 @@ export const fetchVendorCoupons = createAsyncThunk(
         userId,
         vendorId,
       });
-
+console.log(userId,"to get all trending coupons") 
       console.log('Vendor Coupons Response:', response.data);
 
       const coupons = response.data?.data || [];
@@ -390,16 +410,17 @@ export const fetchCouponHistory = createAsyncThunk(
   }
 );
 
-// ─────────────────────────────────────────────
-// Send Coupon Usage (after successful QR scan)
-// ─────────────────────────────────────────────
+
 export const recordCouponUsage = createAsyncThunk(
   'coupons/recordCouponUsage',
-  async ({ userId, couponId }, { rejectWithValue }) => {
+  async ({ userId, couponId ,couponType,rewardPoints}, { rejectWithValue }) => {
+    console.log(userId,couponId,couponType,"u_i,_c_i,c_t")
     try {
       const response = await api.post(endpoints.SEND_COUPON_USAGE, {
         userId,
         couponId,
+        couponType,
+        rewardPoints
       });
       return response.data;
     } catch (err) {
@@ -442,39 +463,71 @@ export const fetchRewardsCoupons = createAsyncThunk(
     }
   }
 );
+
+
 export const fetchRedeemableCoupons = createAsyncThunk(
   'auth/fetchRedeemableCoupons',
-  async (points, { rejectWithValue }) => {
+  async ({ userId, points }, { rejectWithValue }) => {
+    if (!userId) {
+      return rejectWithValue('User not logged in');
+    }
+
     if (!points || points <= 0) {
       return rejectWithValue('Please enter valid points');
     }
+
     try {
-      const response = await api.get(`rewardsbypoints/${points}`);
+      console.log(userId,points,"user id and points_____________")
+      const response = await api.post('rewardsbypoints', {
+        userId,
+        rewardPoints:points,
+      });
+
+      console.log('Redeemable Coupons Response:', response.data);
+
       if (response.data.status) {
-        return response.data.data; // array of available coupons
+        return response.data.data || [];
       } else {
         return rejectWithValue(response.data.message || 'No coupons available');
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || err.message || 'Failed to fetch coupons';
+      console.error('Redeemable Coupons Error:', err.response?.data);
+      const msg = err?.response?.data?.message || 'Failed to load redeemable coupons';
       return rejectWithValue(msg);
     }
   }
 );
 
-// ─────────────────────────────────────────────
-// Slice
-// ─────────────────────────────────────────────
+
 const AuthSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    actionLogout: (state) => {
+    //  actionLogout: (state) => {  // ← THIS IS THE PROBLEM
+    //   state.token = null;
+    //   state.userId = null;
+    //   state.isNewUser = false;
+    //   state.otpRequestSuccess = false;
+    //   state.message = null;
+    // },
+     logout: (state) => {
+      // Clear authentication data
       state.token = null;
       state.userId = null;
+      state.profile = null;
       state.isNewUser = false;
       state.otpRequestSuccess = false;
       state.message = null;
+
+      // Also clear user-specific fetched data (recommended)
+      state.categories = [];
+      state.coupons = [];
+      state.trendingCoupons = [];
+      state.vendorCoupons = [];
+      state.vendorInfo = null;
+      state.couponHistory = [];
+      state.rewardsCoupons = [];
+      state.totalPoints = 0;
     },
     resetOtpState: (state) => {
       state.isNewUser = false;
@@ -695,5 +748,5 @@ const AuthSlice = createSlice({
   },
 });
 
-export const { actionLogout, resetOtpState } = AuthSlice.actions;
+export const { actionLogout, resetOtpState ,logout} = AuthSlice.actions;
 export default AuthSlice.reducer;
