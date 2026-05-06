@@ -219,9 +219,10 @@ const AppNavigation = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="LoginScreen"
+        initialRouteName="Splash"
         screenOptions={{ headerShown: false }}
-      >
+      >  
+      
         <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="LoginScreen" component={LoginScreen} />
         <Stack.Screen name="OtpVerificationScreen" component={OtpVerificationScreen} />

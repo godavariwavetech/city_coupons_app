@@ -10,6 +10,7 @@ import  AuthSlice from './reducers/auth';
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
+  blacklist: ['loading', 'message', 'otpRequestSuccess', 'isNewUser'],
 };
 const persistedAuth = persistReducer(persistConfig, AuthSlice);
 

@@ -1,209 +1,209 @@
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   Image,
-//   StyleSheet,
-//   SafeAreaView,
-//   StatusBar,
-//   KeyboardAvoidingView,
-//   Platform,
-//   ActivityIndicator,Alert
-// } from "react-native";
-// import { useSafeAreaInsets } from "react-native-safe-area-context";
-// import {
-//   responsiveHeight,
-//   responsiveWidth,
-//   responsiveFontSize,
-// } from "react-native-responsive-dimensions";
-// import CustomModal from "../components/CustomModal";
-// import { useDispatch, useSelector } from "react-redux";
-// import { requestLoginOtp, resetOtpState } from "../redux/reducers/auth";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,Alert
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  responsiveHeight,
+  responsiveWidth,
+  responsiveFontSize,
+} from "react-native-responsive-dimensions";
+import CustomModal from "../components/CustomModal";
+import { useDispatch, useSelector } from "react-redux";
+import { requestLoginOtp, resetOtpState } from "../redux/reducers/auth";
 
-// const LoginScreen = ({ navigation }) => {
-//   const insets = useSafeAreaInsets();
-//   const [phone, setPhone] = useState("");
-//   const [modalVisible, setModalVisible] = useState(false);
-//   const [errorMessage, setErrorMessage] = useState("");
+const LoginScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const [phone, setPhone] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-//   const dispatch = useDispatch();
-//   const { loading, isNewUser, otpRequestSuccess, message } = useSelector(
-//     (state) => state.Auth
-//   );
+  const dispatch = useDispatch();
+  const { loading, isNewUser, otpRequestSuccess, message } = useSelector(
+    (state) => state.Auth
+  );
 
-//   useEffect(() => {
-//     dispatch(resetOtpState());
-//   }, [dispatch]);
+  useEffect(() => {
+    dispatch(resetOtpState());
+  }, [dispatch]);
 
-//   useEffect(() => {
-//     if (otpRequestSuccess) {
-//       if (isNewUser) {
-//         Alert.alert(
-//           "Welcome!",
-//           message || "Please register to continue.",
-//           [
-//             {
-//               text: "Register",
-//               onPress: () => navigation.navigate("RegisterManuallyScreen"),
-//             },
-//           ],
-//           { cancelable: false }
-//         );
-//       } else {
-//         navigation.replace("OtpVerificationScreen", { mobile: phone });
-//       }
-//     }
-//   }, [otpRequestSuccess, isNewUser, message, navigation, phone]);
+  useEffect(() => {
+    if (otpRequestSuccess) {
+      if (isNewUser) {
+        Alert.alert(
+          "Welcome!",
+          message || "Please register to continue.",
+          [
+            {
+              text: "Register",
+              onPress: () => navigation.navigate("RegisterManuallyScreen"),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        navigation.replace("OtpVerificationScreen", { mobile: phone });
+      }
+    }
+  }, [otpRequestSuccess, isNewUser, message, navigation, phone]);
 
-//   const validatePhone = (phoneNumber) => {
-//     const digitsOnly = phoneNumber.replace(/\D/g, "");
-//     if (digitsOnly.length !== 10) {
-//       return "Please enter a valid 10-digit phone number.";
-//     }
-//     return null;
-//   };
+  const validatePhone = (phoneNumber) => {
+    const digitsOnly = phoneNumber.replace(/\D/g, "");
+    if (digitsOnly.length !== 10) {
+      return "Please enter a valid 10-digit phone number.";
+    }
+    return null;
+  };
 
-//   const handleLogin = async () => {
-//     const error = validatePhone(phone);
-//     if (error) {
-//       setErrorMessage(error);
-//       setModalVisible(true);
-//       return;
-//     }
+  const handleLogin = async () => {
+    const error = validatePhone(phone);
+    if (error) {
+      setErrorMessage(error);
+      setModalVisible(true);
+      return;
+    }
 
-//     dispatch(requestLoginOtp(phone));
-//   };
+    dispatch(requestLoginOtp(phone));
+  };
 
-//   const handleModalClose = () => setModalVisible(false);
+  const handleModalClose = () => setModalVisible(false);
 
-//   return (
-//     <SafeAreaView
-//       style={[
-//         styles.container,
-//         { paddingTop: insets.top, paddingBottom: insets.bottom },
-//       ]}
-//     >
-//       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+  return (
+    <SafeAreaView
+      style={[
+        styles.container,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-//       <KeyboardAvoidingView
-//         behavior={Platform.OS === "ios" ? "padding" : undefined}
-//         style={styles.innerContainer}
-//       >
-//         <Text style={styles.welcomeText}>Welcome to</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.innerContainer}
+      >
+        <Text style={styles.welcomeText}>Welcome to</Text>
 
-//         <Image
-//           source={require("../assets/icon2.png")}
-//           style={styles.logo}
-//           resizeMode="contain"
-//         />
+        <Image
+          source={require("../assets/icon2.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
 
-//         <View style={styles.inputContainer}>
-//           <Text style={styles.countryCode}>+91</Text>
-//           <TextInput
-//             style={styles.input}
-//             placeholder="Phone number"
-//             placeholderTextColor="#888"
-//             keyboardType="number-pad"
-//             value={phone}
-//             onChangeText={setPhone}
-//             maxLength={10}
-//           />
-//         </View>
+        <View style={styles.inputContainer}>
+          <Text style={styles.countryCode}>+91</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Phone number"
+            placeholderTextColor="#888"
+            keyboardType="number-pad"
+            value={phone}
+            onChangeText={setPhone}
+            maxLength={10}
+          />
+        </View>
 
-//         <TouchableOpacity
-//           style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-//           onPress={handleLogin}
-//           disabled={loading}
-//         >
-//           {loading ? (
-//             <ActivityIndicator color="#fff" />
-//           ) : (
-//             <Text style={styles.loginText}>Login</Text>
-//           )}
-//         </TouchableOpacity>
-//       </KeyboardAvoidingView>
+        <TouchableOpacity
+          style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.loginText}>Login</Text>
+          )}
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
 
-//       <CustomModal
-//         visible={modalVisible}
-//         onClose={handleModalClose}
-//         title="Validation Error"
-//         content={errorMessage}
-//         onConfirm={handleModalClose}
-//         confirmText="OK"
-//         showCancelButton={false}
-//       />
-//     </SafeAreaView>
-//   );
-// };
+      <CustomModal
+        visible={modalVisible}
+        onClose={handleModalClose}
+        title="Validation Error"
+        content={errorMessage}
+        onConfirm={handleModalClose}
+        confirmText="OK"
+        showCancelButton={false}
+      />
+    </SafeAreaView>
+  );
+};
 
-// export default LoginScreen;
+export default LoginScreen;
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#fff",
-//     justifyContent: "center",
-//   },
-//   innerContainer: {
-//     flex: 1,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   welcomeText: {
-//     fontSize: responsiveFontSize(2.3),
-//     fontFamily: "SF-Pro-Display-Semibold",
-//     color: "#7a7a7a",
-//     marginBottom: responsiveHeight(2),
-//   },
-//   logo: {
-//     width: responsiveWidth(70),
-//     height: responsiveHeight(15),
-//     alignSelf: "center",
-//   },
-//   inputContainer: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     backgroundColor: "#E9F0FF",
-//     width: responsiveWidth(80),
-//     borderRadius: 30,
-//     paddingHorizontal: responsiveWidth(4),
-//     height: responsiveHeight(6.5),
-//     borderWidth: 1,
-//     borderColor: "#C9D4FF",
-//     marginBottom: responsiveHeight(3),
-//   },
-//   countryCode: {
-//     fontSize: responsiveFontSize(2),
-//     fontFamily: "SF-Pro-Display-Medium",
-//     color: "#555",
-//     marginRight: responsiveWidth(2),
-//   },
-//   input: {
-//     flex: 1,
-//     fontSize: responsiveFontSize(2),
-//     color: "#000",
-//     fontFamily: "SF-Pro-Display-Medium",
-//   },
-//   loginButton: {
-//     backgroundColor: "#001D4A",
-//     width: responsiveWidth(40),
-//     height: responsiveHeight(6),
-//     borderRadius: 30,
-//     alignItems: "center",
-//     justifyContent: "center",
-//     marginBottom: responsiveHeight(3),
-//   },
-//   loginButtonDisabled: {
-//     opacity: 0.7,
-//   },
-//   loginText: {
-//     color: "#fff",
-//     fontSize: responsiveFontSize(2),
-//     fontFamily: "SF-Pro-Display-Bold",
-//   },
-// });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+  },
+  innerContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  welcomeText: {
+    fontSize: responsiveFontSize(2.3),
+    fontFamily: "SF-Pro-Display-Semibold",
+    color: "#7a7a7a",
+    marginBottom: responsiveHeight(2),
+  },
+  logo: {
+    width: responsiveWidth(70),
+    height: responsiveHeight(15),
+    alignSelf: "center",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E9F0FF",
+    width: responsiveWidth(80),
+    borderRadius: 30,
+    paddingHorizontal: responsiveWidth(4),
+    height: responsiveHeight(6.5),
+    borderWidth: 1,
+    borderColor: "#C9D4FF",
+    marginBottom: responsiveHeight(3),
+  },
+  countryCode: {
+    fontSize: responsiveFontSize(2),
+    fontFamily: "SF-Pro-Display-Medium",
+    color: "#555",
+    marginRight: responsiveWidth(2),
+  },
+  input: {
+    flex: 1,
+    fontSize: responsiveFontSize(2),
+    color: "#000",
+    fontFamily: "SF-Pro-Display-Medium",
+  },
+  loginButton: {
+    backgroundColor: "#001D4A",
+    width: responsiveWidth(40),
+    height: responsiveHeight(6),
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: responsiveHeight(3),
+  },
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
+  loginText: {
+    color: "#fff",
+    fontSize: responsiveFontSize(2),
+    fontFamily: "SF-Pro-Display-Bold",
+  },
+});
 
 
 
@@ -4620,291 +4620,291 @@
 // });
 
 // export default AddCategoryScreen;
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-  StatusBar,
-  Platform,
-  Alert,
-} from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+// import React, { useState } from 'react';
+// import {
+//   View,
+//   Text,
+//   StyleSheet,
+//   TextInput,
+//   TouchableOpacity,
+//   ScrollView,
+//   SafeAreaView,
+//   StatusBar,
+//   Platform,
+//   Alert,
+// } from 'react-native';
+// import Feather from 'react-native-vector-icons/Feather';
 
-// --- Constants & Theme ---
-const COLORS = {
-  primaryGreen: '#004D40', // Deep green for selected state and buttons
-  white: '#FFFFFF',
-  textDark: '#1A1A1A',
-  labelGray: '#757575',
-  placeholderGray: '#BDBDBD',
-  borderColor: '#E0E0E0',
-  bg: '#FFFFFF',
-  radioUnselected: '#BDBDBD', // Color for unselected radio circle
-};
+// // --- Constants & Theme ---
+// const COLORS = {
+//   primaryGreen: '#004D40', // Deep green for selected state and buttons
+//   white: '#FFFFFF',
+//   textDark: '#1A1A1A',
+//   labelGray: '#757575',
+//   placeholderGray: '#BDBDBD',
+//   borderColor: '#E0E0E0',
+//   bg: '#FFFFFF',
+//   radioUnselected: '#BDBDBD', // Color for unselected radio circle
+// };
 
-// --- Font Family Configuration ---
-const FONTS = {
-  regular: 'SF-Pro-Display-Regular',
-  medium: 'SF-Pro-Display-Medium',
-  bold: 'SF-Pro-Display-Bold',
-};
+// // --- Font Family Configuration ---
+// const FONTS = {
+//   regular: 'SF-Pro-Display-Regular',
+//   medium: 'SF-Pro-Display-Medium',
+//   bold: 'SF-Pro-Display-Bold',
+// };
 
-// --- Mock Data for Radio Options ---
-const RADIO_OPTIONS = [
-  { id: 'general', label: 'General Query' },
-  { id: 'technical', label: 'Technical Support' },
-  { id: 'feedback', label: 'Feedback' },
-  { id: 'other', label: 'Other' },
-];
+// // --- Mock Data for Radio Options ---
+// const RADIO_OPTIONS = [
+//   { id: 'general', label: 'General Query' },
+//   { id: 'technical', label: 'Technical Support' },
+//   { id: 'feedback', label: 'Feedback' },
+//   { id: 'other', label: 'Other' },
+// ];
 
-const CreateQueryScreen = ({ navigation }) => {
-  // --- State ---
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+// const CreateQueryScreen = ({ navigation }) => {
+//   // --- State ---
+//   const [selectedCategory, setSelectedCategory] = useState(null);
+//   const [title, setTitle] = useState('');
+//   const [description, setDescription] = useState('');
 
-  // --- Handlers ---
-  const handleBackPress = () => {
-    console.log('Back button pressed');
-    // navigation.goBack(); 
-  };
+//   // --- Handlers ---
+//   const handleBackPress = () => {
+//     console.log('Back button pressed');
+//     // navigation.goBack(); 
+//   };
 
-  const handleSubmit = () => {
-    if (!selectedCategory) {
-      Alert.alert('Validation', 'Please select a category.');
-      return;
-    }
-    if (!title.trim()) {
-      Alert.alert('Validation', 'Please enter a query title.');
-      return;
-    }
+//   const handleSubmit = () => {
+//     if (!selectedCategory) {
+//       Alert.alert('Validation', 'Please select a category.');
+//       return;
+//     }
+//     if (!title.trim()) {
+//       Alert.alert('Validation', 'Please enter a query title.');
+//       return;
+//     }
 
-    const formData = {
-      category: selectedCategory,
-      title: title,
-      description: description,
-    };
+//     const formData = {
+//       category: selectedCategory,
+//       title: title,
+//       description: description,
+//     };
 
-    console.log('Submitting Query:', formData);
-    Alert.alert('Success', 'Query created successfully!');
-    // Reset form
-    setSelectedCategory(null);
-    setTitle('');
-    setDescription('');
-  };
+//     console.log('Submitting Query:', formData);
+//     Alert.alert('Success', 'Query created successfully!');
+//     // Reset form
+//     setSelectedCategory(null);
+//     setTitle('');
+//     setDescription('');
+//   };
 
-  // --- Custom Radio Option Component ---
-  const RadioOptionRow = ({ item, selected, onSelect }) => {
-    return (
-      <TouchableOpacity
-        style={styles.radioRow}
-        onPress={() => onSelect(item.id)}
-        activeOpacity={0.7}
-      >
-        {/* The Radio Circle Visual */}
-        <View
-          style={[
-            styles.radioOuterCircle,
-            selected && styles.radioOuterCircleSelected,
-          ]}
-        >
-          {selected && <View style={styles.radioInnerCircle} />}
-        </View>
+//   // --- Custom Radio Option Component ---
+//   const RadioOptionRow = ({ item, selected, onSelect }) => {
+//     return (
+//       <TouchableOpacity
+//         style={styles.radioRow}
+//         onPress={() => onSelect(item.id)}
+//         activeOpacity={0.7}
+//       >
+//         {/* The Radio Circle Visual */}
+//         <View
+//           style={[
+//             styles.radioOuterCircle,
+//             selected && styles.radioOuterCircleSelected,
+//           ]}
+//         >
+//           {selected && <View style={styles.radioInnerCircle} />}
+//         </View>
         
-        {/* The Label */}
-        <Text style={styles.radioText}>{item.label}</Text>
-      </TouchableOpacity>
-    );
-  };
+//         {/* The Label */}
+//         <Text style={styles.radioText}>{item.label}</Text>
+//       </TouchableOpacity>
+//     );
+//   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
-      {/* --- Header --- */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color={COLORS.textDark} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Create Query</Text>
-        <View style={styles.headerRightPlaceholder} />
-      </View>
+//       {/* --- Header --- */}
+//       <View style={styles.header}>
+//         <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+//           <Feather name="arrow-left" size={24} color={COLORS.textDark} />
+//         </TouchableOpacity>
+//         <Text style={styles.headerTitle}>Create Query</Text>
+//         <View style={styles.headerRightPlaceholder} />
+//       </View>
 
-      {/* --- Main Content --- */}
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+//       {/* --- Main Content --- */}
+//       <ScrollView 
+//         style={styles.scrollView}
+//         contentContainerStyle={styles.scrollContent}
+//         showsVerticalScrollIndicator={false}
+//       >
         
-        {/* 1. Category Radio Group */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.label}>Category</Text>
-          <View style={styles.radioGroupContainer}>
-            {RADIO_OPTIONS.map((option) => (
-              <RadioOptionRow
-                key={option.id}
-                item={option}
-                selected={selectedCategory === option.id}
-                onSelect={setSelectedCategory}
-              />
-            ))}
-          </View>
-        </View>
+//         {/* 1. Category Radio Group */}
+//         <View style={styles.sectionContainer}>
+//           <Text style={styles.label}>Category</Text>
+//           <View style={styles.radioGroupContainer}>
+//             {RADIO_OPTIONS.map((option) => (
+//               <RadioOptionRow
+//                 key={option.id}
+//                 item={option}
+//                 selected={selectedCategory === option.id}
+//                 onSelect={setSelectedCategory}
+//               />
+//             ))}
+//           </View>
+//         </View>
 
-        {/* 2. Query Title Input */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.label}>Query Title</Text>
-          <TextInput
-            style={styles.input}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Enter query title"
-            placeholderTextColor={COLORS.placeholderGray}
-          />
-        </View>
+//         {/* 2. Query Title Input */}
+//         <View style={styles.sectionContainer}>
+//           <Text style={styles.label}>Query Title</Text>
+//           <TextInput
+//             style={styles.input}
+//             value={title}
+//             onChangeText={setTitle}
+//             placeholder="Enter query title"
+//             placeholderTextColor={COLORS.placeholderGray}
+//           />
+//         </View>
 
-        {/* 3. Description Input (Multiline) */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Detail your query here..."
-            placeholderTextColor={COLORS.placeholderGray}
-            multiline={true}
-            numberOfLines={5}
-            textAlignVertical="top" // Ensures text starts at top on Android
-          />
-        </View>
+//         {/* 3. Description Input (Multiline) */}
+//         <View style={styles.sectionContainer}>
+//           <Text style={styles.label}>Description</Text>
+//           <TextInput
+//             style={[styles.input, styles.textArea]}
+//             value={description}
+//             onChangeText={setDescription}
+//             placeholder="Detail your query here..."
+//             placeholderTextColor={COLORS.placeholderGray}
+//             multiline={true}
+//             numberOfLines={5}
+//             textAlignVertical="top" // Ensures text starts at top on Android
+//           />
+//         </View>
 
-      </ScrollView>
+//       </ScrollView>
 
-      {/* --- Bottom Button --- */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.9}>
-          <Text style={styles.submitButtonText}>Submit Query</Text>
-        </TouchableOpacity>
-      </View>
+//       {/* --- Bottom Button --- */}
+//       <View style={styles.footer}>
+//         <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} activeOpacity={0.9}>
+//           <Text style={styles.submitButtonText}>Submit Query</Text>
+//         </TouchableOpacity>
+//       </View>
 
-    </SafeAreaView>
-  );
-};
+//     </SafeAreaView>
+//   );
+// };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
-  // --- Header Styles ---
-  header: {
-    height: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
-  },
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: FONTS.bold,
-    color: COLORS.textDark,
-  },
-  headerRightPlaceholder: {
-    width: 40,
-  },
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: COLORS.bg,
+//   },
+//   // --- Header Styles ---
+//   header: {
+//     height: 56,
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     justifyContent: 'space-between',
+//     paddingHorizontal: 16,
+//     backgroundColor: COLORS.white,
+//   },
+//   backButton: {
+//     padding: 8,
+//     marginLeft: -8,
+//   },
+//   headerTitle: {
+//     fontSize: 20,
+//     fontFamily: FONTS.bold,
+//     color: COLORS.textDark,
+//   },
+//   headerRightPlaceholder: {
+//     width: 40,
+//   },
 
-  // --- ScrollView & Content Styles ---
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  sectionContainer: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
-    fontFamily: FONTS.medium,
-    color: COLORS.textDark,
-    marginBottom: 12,
-  },
-  input: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.borderColor,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontFamily: FONTS.regular,
-    color: COLORS.textDark,
-  },
-  textArea: {
-    minHeight: 120,
-  },
+//   // --- ScrollView & Content Styles ---
+//   scrollView: {
+//     flex: 1,
+//   },
+//   scrollContent: {
+//     padding: 20,
+//   },
+//   sectionContainer: {
+//     marginBottom: 24,
+//   },
+//   label: {
+//     fontSize: 16,
+//     fontFamily: FONTS.medium,
+//     color: COLORS.textDark,
+//     marginBottom: 12,
+//   },
+//   input: {
+//     backgroundColor: COLORS.white,
+//     borderWidth: 1,
+//     borderColor: COLORS.borderColor,
+//     borderRadius: 8,
+//     paddingHorizontal: 16,
+//     paddingVertical: 12,
+//     fontSize: 16,
+//     fontFamily: FONTS.regular,
+//     color: COLORS.textDark,
+//   },
+//   textArea: {
+//     minHeight: 120,
+//   },
 
-  // --- Radio Button Styles ---
-  radioGroupContainer: {
-    marginTop: 4,
-  },
-  radioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  radioOuterCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: COLORS.radioUnselected,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  radioOuterCircleSelected: {
-    borderColor: COLORS.primaryGreen,
-  },
-  radioInnerCircle: {
-    height: 10,
-    width: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.primaryGreen,
-  },
-  radioText: {
-    fontSize: 16,
-    fontFamily: FONTS.regular,
-    color: COLORS.textDark,
-  },
+//   // --- Radio Button Styles ---
+//   radioGroupContainer: {
+//     marginTop: 4,
+//   },
+//   radioRow: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     marginBottom: 16,
+//   },
+//   radioOuterCircle: {
+//     height: 20,
+//     width: 20,
+//     borderRadius: 10,
+//     borderWidth: 2,
+//     borderColor: COLORS.radioUnselected,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginRight: 12,
+//   },
+//   radioOuterCircleSelected: {
+//     borderColor: COLORS.primaryGreen,
+//   },
+//   radioInnerCircle: {
+//     height: 10,
+//     width: 10,
+//     borderRadius: 5,
+//     backgroundColor: COLORS.primaryGreen,
+//   },
+//   radioText: {
+//     fontSize: 16,
+//     fontFamily: FONTS.regular,
+//     color: COLORS.textDark,
+//   },
 
-  // --- Footer & Button Styles ---
-  footer: {
-    padding: 20,
-    backgroundColor: COLORS.white,
-  },
-  submitButton: {
-    backgroundColor: COLORS.primaryGreen,
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  submitButtonText: {
-    fontSize: 18,
-    fontFamily: FONTS.bold,
-    color: COLORS.white,
-  },
-});
+//   // --- Footer & Button Styles ---
+//   footer: {
+//     padding: 20,
+//     backgroundColor: COLORS.white,
+//   },
+//   submitButton: {
+//     backgroundColor: COLORS.primaryGreen,
+//     borderRadius: 8,
+//     paddingVertical: 16,
+//     alignItems: 'center',
+//   },
+//   submitButtonText: {
+//     fontSize: 18,
+//     fontFamily: FONTS.bold,
+//     color: COLORS.white,
+//   },
+// });
 
-export default CreateQueryScreen;
+// export default CreateQueryScreen;

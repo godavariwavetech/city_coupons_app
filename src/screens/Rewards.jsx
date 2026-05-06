@@ -273,7 +273,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserProfile } from '../redux/reducers/auth';
 import { fetchRewardsCoupons } from '../redux/reducers/auth';
-
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 const Rewards = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
@@ -404,7 +404,7 @@ const handleSubmitPoints = () => {
       ]}
     >
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-
+  
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>

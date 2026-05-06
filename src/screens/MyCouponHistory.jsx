@@ -467,20 +467,35 @@ const MyCouponHistory = ({ navigation }) => {
       );
     }
 
-    if (filteredCouponHistory.length === 0) {
-      const hasAnyHistory = couponHistory && couponHistory.length > 0;
-      return (
-        <View style={styles.center}>
-          <MaterialIcons name="receipt-long" size={60} color="#ccc" />
-          <Text style={styles.emptyText}>
-            {hasAnyHistory
-              ? `No coupons redeemed in ${selectedFilterText}`
-              : 'No coupons redeemed yet'}
-          </Text>
-        </View>
-      );
-    }
-
+    // if (filteredCouponHistory.length === 0) {
+    //   const hasAnyHistory = couponHistory && couponHistory.length > 0;
+    //   return (
+    //     <View style={styles.center}>
+    //       <MaterialIcons name="receipt-long" size={60} color="#ccc" />
+    //       <Text style={styles.emptyText}>
+    //         {hasAnyHistory
+    //           ? `No coupons redeemed in ${selectedFilterText}`
+    //           : 'No coupons redeemed yet'}
+    //       </Text>
+    //     </View>
+    //   );
+    // }
+if (filteredCouponHistory.length === 0) {
+  const hasAnyHistory = couponHistory && couponHistory.length > 0;
+  return (
+    // Wrap in an extra View with flex: 1 to push it to the true center of the screen
+    <View style={{ flex: 1 }}> 
+      <View style={styles.center}>
+        <MaterialIcons name="receipt-long" size={60} color="#ccc" />
+        <Text style={styles.emptyText}>
+          {hasAnyHistory
+            ? `No coupons redeemed in ${selectedFilterText}`
+            : 'No coupons redeemed yet'}
+        </Text>
+      </View>
+    </View>
+  );
+}
     return (
       <FlatList
         data={filteredCouponHistory}
@@ -502,9 +517,7 @@ const MyCouponHistory = ({ navigation }) => {
       <View style={[styles.container, { paddingTop: insets.top + 15 }]}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-            <MaterialIcons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
+         
           <Text style={styles.headerTitle}>My Coupon History</Text>
           <View style={styles.placeholder} />
         </View>
@@ -658,6 +671,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily:"SF-Pro-Display-Regular"
   },
+
+  center: {
+  flex: 1, // This tells the view to take up all available space
+  justifyContent: 'center', // Centers vertically
+  alignItems: 'center',     // Centers horizontally
+  paddingHorizontal: 32,
+  paddingBottom: 100, // Optional: Offset the height of the header/filter to make it "visually" centered
+},
 });
 
 export default MyCouponHistory;

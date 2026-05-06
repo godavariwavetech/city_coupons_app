@@ -1,181 +1,3 @@
-// // src/redux/reducers/auth.js
-
-// import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import api from '../../utils/api';
-// import { endpoints } from '../../config/config';
-
-// const initialState = {
-//   message: null,
-//   loading: false,
-//   token: null,
-//   userRole: 1,
-//   userId: null,
-//   isNewUser: false,
-//   otpRequestSuccess: false,
-// };
-
-// // ─────────────────────────────────────────────
-// // 1. Request Login OTP
-// // ─────────────────────────────────────────────
-// export const requestLoginOtp = createAsyncThunk(
-//   'auth/requestLoginOtp',
-//   async (mobileNumber, { rejectWithValue }) => {
-//     try {
-//       const response = await api.post(endpoints.REQUEST_LOGIN_OTP, {
-//         mobile: mobileNumber,
-//       });
-//       return response.data; // { status, message, user_ind }
-//     } catch (err) {
-//       const msg =
-//         err?.response?.data?.message || err.message || 'Network Error';
-//       return rejectWithValue(msg);
-//     }
-//   }
-// );
-
-// // ─────────────────────────────────────────────
-// // 2. Register New User
-// // ─────────────────────────────────────────────
-// export const registerUser = createAsyncThunk(
-//   'auth/registerUser',
-//   async (userData, { rejectWithValue }) => {
-//     try {
-//       const response = await api.post(endpoints.USER_REGISTRATION, userData);
-//       return response.data; // { status, message, user_id }
-//     } catch (err) {
-//       const msg =
-//         err?.response?.data?.message || err.message || 'Registration Failed';
-//       return rejectWithValue(msg);
-//     }
-//   }
-// );
-
-// // ─────────────────────────────────────────────
-// // 3. Verify Login OTP
-// // ─────────────────────────────────────────────
-// export const verifyLoginOtp = createAsyncThunk(
-//   'auth/verifyLoginOtp',
-//   async ({ mobile, otp }, { rejectWithValue }) => {
-//     try {
-//       const response = await api.post(endpoints.USER_VERIFICATION, {
-//         mobile,
-//         otp,
-//       });
-//       // Expect something like: { status: 200, message, user_id, token? }
-//       return response.data;
-//     } catch (err) {
-//       const msg =
-//         err?.response?.data?.message || err.message || 'Verification Failed';
-//       return rejectWithValue(msg);
-//     }
-//   }
-// );
-
-// // ─────────────────────────────────────────────
-// // Slice
-// // ─────────────────────────────────────────────
-// const AuthSlice = createSlice({
-//   name: 'auth',
-//   initialState,
-//   reducers: {
-//     actionLogout: (state) => {
-//       state.token = null;
-//       state.userId = null;
-//       state.isNewUser = false;
-//       state.otpRequestSuccess = false;
-//       state.message = null;
-//     },
-//     resetOtpState: (state) => {
-//       state.isNewUser = false;
-//       state.otpRequestSuccess = false;
-//       state.message = null;
-//       state.loading = false;
-//     },
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       // Request OTP
-//       .addCase(requestLoginOtp.pending, (state) => {
-//         state.loading = true;
-//         state.message = null;
-//       })
-//       .addCase(requestLoginOtp.fulfilled, (state, action) => {
-//   state.loading = false;
-//   state.message = action.payload?.message || null;
-  
-//   const userInd = Number(action.payload?.user_ind);
-  
-//   // These flags help decide: show registration form OR just ask for OTP
-//   state.isNewUser = userInd !== 1;     // true → existing user → skip registration
-//   state.otpRequestSuccess = true;      // OTP was sent successfully
-
-//   console.log('OTP Requested → user_ind:', userInd, '→ isNewUser:', state.isNewUser);
-// })
-//       .addCase(requestLoginOtp.rejected, (state, action) => {
-//         state.loading = false;
-//         state.message = action.payload || 'Network Error';
-//       })
-
-//       // Registration
-//       .addCase(registerUser.pending, (state) => {
-//         state.loading = true;
-//         state.message = null;
-//       })
-//       .addCase(registerUser.fulfilled, (state, action) => {
-//           console.log('Registration Success - user_id:', action.payload?.user_id);
-//         state.loading = false;
-//         state.message = action.payload?.message || null;
-//         // from your example: { status: 200, message: "...", user_id: 10 }
-//         state.userId = action.payload?.user_id ?? null;
-//       })
-//       .addCase(registerUser.rejected, (state, action) => {
-//         state.loading = false;
-//         state.message = action.payload || 'Registration Failed';
-//       })
-
-//       // Verify OTP
-//       .addCase(verifyLoginOtp.pending, (state) => {
-//         state.loading = true;
-//         state.message = null;
-//       })
-//       .addCase(verifyLoginOtp.fulfilled, (state, action) => {
-//   state.loading = false;
-//   state.message = action.payload?.message || 'Login successful';
-
-//   // Always store user_id when login is successful
-//   state.userId = action.payload?.user_id ?? null;
-
-//   // Also store token if returned (add it later in backend if not already)
-//   state.token = action.payload?.token ?? state.token;
-
-//   // Optional: You can update user_ind logic here if needed
-//   const userInd = Number(action.payload?.user_ind);
-  
-//   // Reset flags properly on successful login
-//   state.isNewUser = false;        // After OTP verify, user is logged in → no longer "new"
-//   state.otpRequestSuccess = false; // This flag was only for OTP request step
-
-//   // Critical: Log for debugging
-//   console.log('LOGIN SUCCESS → user_id:', action.payload?.user_id);
-//   console.log('Redux Auth State Updated:', {
-//     userId: state.userId,
-//     token: state.token,
-//     isNewUser: state.isNewUser
-//   });
-// })
-//       .addCase(verifyLoginOtp.rejected, (state, action) => {
-//         state.loading = false;
-//         state.message = action.payload || 'Invalid OTP';
-//       });
-//   },
-// });
-
-// // ─────────────────────────────────────────────
-// // Exports
-// // ─────────────────────────────────────────────
-// export const { actionLogout, resetOtpState } = AuthSlice.actions;
-// export default AuthSlice.reducer;
-// src/redux/reducers/auth.js
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../utils/api';
@@ -215,6 +37,11 @@ rewardsCoupons: [],
 rewardsLoading: false,
 rewardsError: null,
 totalPoints: 0,
+
+
+bniCoupons: [],
+bniLoading: false,
+bniError: null,
 };
 
 
@@ -499,6 +326,20 @@ export const fetchRedeemableCoupons = createAsyncThunk(
 );
 
 
+export const fetchBniCoupons = createAsyncThunk(
+  'home/fetchBniCoupons',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/bnicoupons/${userId}`);
+      return response.data.data || [];
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to load BNI coupons';
+      return rejectWithValue(msg);
+    }
+  }
+);
+
+
 const AuthSlice = createSlice({
   name: 'auth',
   initialState,
@@ -744,6 +585,20 @@ const AuthSlice = createSlice({
   state.couponsLoading = false;
   state.couponsError = action.payload;
   state.coupons = [];
+})
+
+.addCase(fetchBniCoupons.pending, (state) => {
+  state.bniLoading = true;
+  state.bniError = null;
+})
+.addCase(fetchBniCoupons.fulfilled, (state, action) => {
+  state.bniLoading = false;
+  state.bniCoupons = action.payload;
+})
+.addCase(fetchBniCoupons.rejected, (state, action) => {
+  state.bniLoading = false;
+  state.bniError = action.payload;
+  state.bniCoupons = [];
 })
   },
 });
