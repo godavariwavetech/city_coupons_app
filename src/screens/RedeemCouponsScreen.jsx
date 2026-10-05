@@ -190,7 +190,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   FlatList,
   Image,
   ActivityIndicator,
@@ -300,23 +299,23 @@ const RedeemCouponsScreen = ({ route, navigation }) => {
 
   if (couponsLoading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color="#003366" style={{ marginTop: 50 }} />
         <Text style={styles.loadingText}>Loading available coupons...</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (couponsError) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <Text style={styles.errorText}>{couponsError}</Text>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         <Text style={styles.headerTitle}>Redeem with {pointsEntered} Points</Text>
         <Text style={styles.headerSubtitle}>
@@ -341,7 +340,7 @@ const RedeemCouponsScreen = ({ route, navigation }) => {
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

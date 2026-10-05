@@ -1641,8 +1641,11 @@ const RegisterManuallyScreen = ({ navigation }) => {
 
   const formatDOB = (date) => {
     if (!date) return '';
+    // Local date parts: toISOString() converts to UTC, which shifts the day
+    // back for times before 05:30 IST.
     const d = new Date(date);
-    return d.toISOString().split('T')[0];
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   };
 
   const validateForm = () => {
@@ -1919,6 +1922,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
 
       <DatePicker
         modal
+        theme="light"
         open={showDatePicker}
         date={dateOfBirth || new Date()}
         mode="date"

@@ -391,7 +391,6 @@ import {
   ImageBackground,
   TouchableOpacity,
   StatusBar,
-  SafeAreaView,
   Image,
   Dimensions,
   ScrollView,
@@ -432,7 +431,7 @@ const CoffeeOfferScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#ffffff' }}>
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent />
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -536,7 +535,7 @@ const CoffeeOfferScreen = () => {
           <View style={{ height: insets.bottom + 20 }} />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

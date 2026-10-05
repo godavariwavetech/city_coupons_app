@@ -662,7 +662,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  SafeAreaView,
   Image,
   FlatList,
   ActivityIndicator,
@@ -758,7 +757,7 @@ const CouponsListScreen = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <View style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* Back Button */}
@@ -843,7 +842,7 @@ const CouponsListScreen = () => {
           </View>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

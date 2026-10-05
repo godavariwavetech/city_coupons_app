@@ -7,7 +7,6 @@ import {
   Image,
   Modal,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   Alert,
@@ -114,7 +113,7 @@ const OtpVerificationScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
       <Image source={require("../assets/icon2.png")} style={styles.logo} resizeMode="contain" />
@@ -181,7 +180,7 @@ const OtpVerificationScreen = ({ navigation, route }) => {
           <Text style={styles.verifyText}>Verify</Text>
         )}
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 

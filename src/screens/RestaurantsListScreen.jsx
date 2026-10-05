@@ -208,7 +208,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   FlatList,
   Image,
@@ -302,7 +301,7 @@ const RestaurantsListScreen = () => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { paddingTop: insets.top, paddingBottom: insets.bottom },
@@ -345,7 +344,7 @@ const RestaurantsListScreen = () => {
       />
 
       <Toast />
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -316,7 +316,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TextInput,
   Image,
@@ -417,7 +416,7 @@ const MyCoupons = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, {  }]}>
+    <View style={[styles.container, {  }]}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
       {/* Header */}
@@ -481,7 +480,7 @@ const MyCoupons = () => {
   categories.map(renderCategoryBlock)
 )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

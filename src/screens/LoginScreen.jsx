@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
@@ -79,7 +78,7 @@ const LoginScreen = ({ navigation }) => {
   const handleModalClose = () => setModalVisible(false);
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         { paddingTop: insets.top, paddingBottom: insets.bottom },
@@ -134,7 +133,7 @@ const LoginScreen = ({ navigation }) => {
         confirmText="OK"
         showCancelButton={false}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

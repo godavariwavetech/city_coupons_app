@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   Image,
   ScrollView,
   FlatList,
@@ -239,7 +238,7 @@ const renderCouponCard = (coupon) => {
   );
 };
   return (
-    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
 
       <ScrollView
@@ -363,7 +362,7 @@ const renderCouponCard = (coupon) => {
         onClose={() => setScanModalVisible(false)}
         navigation={navigation}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

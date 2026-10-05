@@ -330,7 +330,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  SafeAreaView,
   Image,
   FlatList,
   Dimensions,
@@ -511,7 +510,7 @@ if (filteredCouponHistory.length === 0) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
+    <View style={{ flex: 1, backgroundColor: '#F5F5F5' }}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
       <View style={[styles.container, { paddingTop: insets.top + 15 }]}>
@@ -537,6 +536,7 @@ if (filteredCouponHistory.length === 0) {
       {/* Date Picker Modal */}
       <DatePicker
         modal
+        theme="light"
         open={open}
         date={selectedDate}
         onConfirm={onDateConfirm}
@@ -548,7 +548,7 @@ if (filteredCouponHistory.length === 0) {
         confirmText="Apply"
         cancelText="Cancel"
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

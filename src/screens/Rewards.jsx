@@ -258,7 +258,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   Platform,
   ScrollView,
@@ -394,7 +393,7 @@ const handleSubmitPoints = () => {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={[
         styles.container,
         {
@@ -489,7 +488,7 @@ const handleSubmitPoints = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
