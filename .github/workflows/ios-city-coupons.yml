@@ -1,0 +1,19 @@
+name: iOS - city_coupons
+
+# Runs only on the ios branch (never main). Trigger a build by pushing to
+# that branch.
+on:
+  push:
+    branches: [ios]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-city-coupons
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    uses: ./.github/workflows/ios-testflight.yml
+    with:
+      app_dir: "."
+    secrets: inherit
