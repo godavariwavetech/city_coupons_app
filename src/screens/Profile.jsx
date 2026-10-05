@@ -18,8 +18,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile, updateUserProfile, logout } from "../redux/reducers/auth"; // Add logout action
+import { fetchUserProfile, updateUserProfile, deleteUserAccount, logout } from "../redux/reducers/auth"; // Add logout action
 import AsyncStorage from "@react-native-async-storage/async-storage"; // For clearing local storage
+import DeleteAccountModal from "../components/DeleteAccountModal";
 
 const { width } = Dimensions.get("window");
 const PRIMARY_COLOR = "rgba(0, 33, 97, 1)";
@@ -41,6 +42,8 @@ function Profile({ navigation }) {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const defaultImage = require("../assets/profile1.png");
 
@@ -131,6 +134,22 @@ function Profile({ navigation }) {
     ]
   );
 };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await dispatch(deleteUserAccount(userId)).unwrap();
+      setShowDeleteModal(false);
+      await AsyncStorage.clear();
+      dispatch(logout());
+      navigation.reset({ index: 0, routes: [{ name: "LoginScreen" }] });
+    } catch (error) {
+      Alert.alert("Error", typeof error === "string" ? error : "Failed to delete account. Please try again.");
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!userId) {
       Alert.alert("Error", "User not logged in");
@@ -352,6 +371,13 @@ function Profile({ navigation }) {
   <MaterialCommunityIcons name="logout" size={24} color="#d32f2f" />
   <Text style={styles.logoutText}>Logout</Text>
 </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.deleteAccountBtn}
+          onPress={() => setShowDeleteModal(true)}
+        >
+          <MaterialCommunityIcons name="delete-outline" size={22} color="#d32f2f" />
+          <Text style={styles.deleteAccountText}>Delete Account</Text>
+        </TouchableOpacity>
         {/* LOGOUT BUTTON */}
         {/* <TouchableOpacity
           style={styles.logoutBtn}
@@ -361,6 +387,13 @@ function Profile({ navigation }) {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity> */}
       </ScrollView>
+
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        loading={deletingAccount}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteAccount}
+      />
     </View>
   );
 }
@@ -465,6 +498,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "SF-Pro-Display-Bold",
     marginLeft: 10,
+  },
+  deleteAccountBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 12,
+    marginHorizontal: 20,
+    paddingVertical: 14,
+  },
+  deleteAccountText: {
+    color: "#d32f2f",
+    fontSize: 16,
+    fontFamily: "SF-Pro-Display-Medium",
+    marginLeft: 8,
   },
 
 

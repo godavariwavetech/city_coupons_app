@@ -12,11 +12,10 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-# Old architecture, same as Android (newArchEnabled=false): react-native-camera
-# and react-native-qrcode-scanner don't support the new architecture.
-ENV['RCT_NEW_ARCH_ENABLED'] = '0'
-
 platform :ios, min_ios_version_supported
+# Same setup as the BNI Coupons iOS app: react-native-camera-kit is a Swift pod.
+use_modular_headers!
+use_frameworks! :linkage => :static
 prepare_react_native_project!
 
 setup_permissions([

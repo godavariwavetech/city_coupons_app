@@ -448,7 +448,7 @@
 // });
 
 // export default QRScannerScreen;
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -458,18 +458,69 @@ import {
   Animated,
   Vibration,
   Alert,
+  AppState,
+  Linking,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch,useSelector } from 'react-redux';
-import QRCodeScanner from 'react-native-qrcode-scanner';
+import { useIsFocused } from '@react-navigation/native';
+// CameraX (Android) / AVFoundation (iOS) based scanner. Replaces react-native-camera,
+// whose deprecated Camera1 preview stayed black on many devices (Oppo F27, Moto G, Poco M4).
+import { Camera, CameraType } from 'react-native-camera-kit';
+import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import ConfettiCannon from 'react-native-confetti-cannon';
 import { recordCouponUsage } from '../redux/reducers/auth';
+
+const CAMERA_PERMISSION = Platform.select({
+  ios: PERMISSIONS.IOS.CAMERA,
+  android: PERMISSIONS.ANDROID.CAMERA,
+});
+
 const QRScannerScreen = ({ route, navigation }) => {
   const dispatch = useDispatch();
+  const isFocused = useIsFocused();
   const { coupon } = route.params || {};
   const [showSuccess, setShowSuccess] = useState(false);
+  // 'checking' | 'granted' | 'denied' | 'blocked'
+  const [permission, setPermission] = useState('checking');
   const scaleAnim = useRef(new Animated.Value(0)).current;
+  const processing = useRef(false); // blocks repeat onReadCode callbacks while a scan is being handled
 const { userId } = useSelector((state) => state.Auth);
+
+  const resolvePermission = useCallback(async (ask) => {
+    try {
+      let status = await check(CAMERA_PERMISSION);
+      if (ask && (status === RESULTS.DENIED)) {
+        status = await request(CAMERA_PERMISSION);
+      }
+      if (status === RESULTS.GRANTED || status === RESULTS.LIMITED) {
+        setPermission('granted');
+      } else if (status === RESULTS.BLOCKED || status === RESULTS.UNAVAILABLE) {
+        setPermission('blocked');
+      } else {
+        setPermission('denied');
+      }
+    } catch (err) {
+      console.error('Camera permission error:', err);
+      setPermission('denied');
+    }
+  }, []);
+
+  useEffect(() => {
+    resolvePermission(true);
+  }, [resolvePermission]);
+
+  // Re-check when the user comes back from the app's system settings
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') resolvePermission(false);
+    });
+    return () => sub.remove();
+  }, [resolvePermission]);
+
   const startAnimation = () => {
     Animated.spring(scaleAnim, {
       toValue: 1,
@@ -482,61 +533,30 @@ const { userId } = useSelector((state) => state.Auth);
   const validateScannedId = (rawData) => {
     let scannedId = rawData?.trim();
 
-    if (!coupon?.couponId) {
-      console.log('❌ No coupon.couponId found');
+    if (!coupon?.vendorId) {
+      console.log('❌ No coupon.vendorId found');
       return false;
     }
 
-    const isMatch = String(scannedId) === String(coupon.couponId);
-    console.log(`✅ Comparing QR:"${scannedId}" vs CouponID:"${coupon.couponId}" = ${isMatch}`);
-    
+    const isMatch = String(scannedId) === String(coupon.vendorId);
+    console.log(`✅ Comparing QR:"${scannedId}" vs VendorID:"${coupon.vendorId}" = ${isMatch}`);
+
     return isMatch;
   };
 
-  // const onSuccess = (e) => {
-  //   console.log('🔍 DEBUG - Raw QR data:', e?.data);
-  //   console.log('🔍 DEBUG - Coupon object:', coupon);
-  //   console.log('🔍 DEBUG - Coupon couponId:', coupon?.couponId);
+const onSuccess = async (rawData) => {
+  if (processing.current) return;
+  processing.current = true;
 
-  //   const rawData = e?.data;
-  //   const isValid = validateScannedId(rawData);
+  console.log('🔍 DEBUG - Raw QR data:', rawData);
+  console.log('🔍 DEBUG - Coupon vendorId:', coupon?.vendorId);
 
-  //   if (!isValid) {
-  //     Vibration.vibrate(150);
-  //     Alert.alert(
-  //       'Invalid QR', 
-  //       `QR: "${rawData}"\nExpected: "${coupon?.couponId}"`,
-  //       [{ text: 'OK' }]
-  //     );
-  //     return;
-  //   }
-
-  //   // Valid coupon - show success
-  //   Vibration.vibrate(200);
-  //   setShowSuccess(true);
-  //   startAnimation();
-
-  //   setTimeout(() => {
-  //     setShowSuccess(false);
-  //     scaleAnim.setValue(0);
-      
-  //     // ✅ CHANGED: Navigate to MyCouponHistory instead of goBack()
-  //     navigation.reset({
-  //       index: 0,
-  //       routes: [{ name: 'MyCouponHistory', params: { coupon } }]
-  //     });
-  //   }, 2800);
-  // };
-const onSuccess = async (e) => {
-  console.log('🔍 DEBUG - Raw QR data:', e?.data);
-  console.log('🔍 DEBUG - Coupon object:', coupon);
-  console.log('🔍 DEBUG - Coupon couponId:', coupon?.couponId);
-
-  const rawData = e?.data;
   const isValid = validateScannedId(rawData);
 
   if (!isValid) {
     Vibration.vibrate(150);
+    // Resume scanning shortly after the alert closes (same pause the old scanner's reactivateTimeout gave)
+    const resume = () => setTimeout(() => { processing.current = false; }, 1500);
   Alert.alert(
   'Invalid QR Code',
   'The scanned QR code does not match this offer.\n\nPlease scan the correct QR code displayed at the store for this coupon.',
@@ -544,8 +564,10 @@ const onSuccess = async (e) => {
     {
       text: 'OK',
       style: 'cancel',
+      onPress: resume,
     },
-  ]
+  ],
+  { onDismiss: resume }
 );
     return;
   }
@@ -555,85 +577,144 @@ const onSuccess = async (e) => {
   setShowSuccess(true);
   startAnimation();
 
-  // Send usage to backend
-  if (userId) {  // ✅ Check userId exists
-    try {
-      const result = await dispatch(recordCouponUsage({
-        userId: userId,
-        couponId: coupon.couponId,
-        couponType:coupon.couponType,
-        rewardPoints:coupon.rewardPoints
-      })).unwrap();
-
-      console.log('✅ Coupon usage recorded:', result);
-    } catch (err) {
-      console.error('❌ Failed to record coupon usage:', err);
-      // Don't block navigation on API failure
-      Alert.alert('Notice', `Coupon applied locally!\n${err}`);
+  // Send usage to backend while the success animation plays (in parallel, not one after the other)
+  const usageRequest = (async () => {
+    if (!userId) {
+      console.warn('No userId - skipping coupon usage recording');
+      return;
     }
-  } else {
-    console.warn('⚠️ No userId - skipping coupon usage recording');
-  }
+    try {
+      console.log('[Flow] Sending coupon usage', {
+        userId,
+        couponId: coupon.couponId,
+        couponType: coupon.couponType,
+        rewardPoints: coupon.rewardPoints,
+      });
+      const result = await dispatch(
+        recordCouponUsage({
+          userId: userId,
+          couponId: coupon.couponId,
+          couponType: coupon.couponType,
+          rewardPoints: coupon.rewardPoints,
+        })
+      ).unwrap();
+      console.log('Coupon usage recorded:', result);
+    } catch (err) {
+      console.error('Failed to record coupon usage:', err);
+      // Don't block navigation on API failure
+      Alert.alert('Notice', 'Coupon applied locally!\n' + err);
+    }
+  })();
 
-  // Navigate after animation (regardless of API success)
-  setTimeout(() => {
-    setShowSuccess(false);
-    scaleAnim.setValue(0);
-    
-    // ✅ FIXED NAVIGATION for TabNavigator
-    navigation.navigate('TabNavigator', {  // Replace 'Tabs' with your TabNavigator name
-      screen: 'MyCouponHistory',
-      params: {
-        coupon: {
-          ...coupon,
-          scannedAt: new Date().toISOString(),
-          usageRecorded: !!userId,  // true if userId existed
-        },
-      }
-    });
-  }, 2800);
+  // Navigate once the animation has had ~2s AND the request has finished (regardless of API success)
+  await Promise.all([usageRequest, new Promise((resolve) => setTimeout(resolve, 2000))]);
+  setShowSuccess(false);
+  scaleAnim.setValue(0);
+  processing.current = false;
+
+  navigation.navigate('TabNavigator', {
+    screen: 'MyCouponHistory',
+    params: {
+      coupon: {
+        ...coupon,
+        scannedAt: new Date().toISOString(),
+        usageRecorded: !!userId,
+      },
+    },
+  });
 };
 
+  const renderPermissionView = () => {
+    if (permission === 'checking') {
+      return (
+        <View style={styles.permissionContainer}>
+          <ActivityIndicator size="large" color="#4CAF50" />
+        </View>
+      );
+    }
+    const blocked = permission === 'blocked';
+    return (
+      <View style={styles.permissionContainer}>
+        <MaterialIcons name="photo-camera" size={64} color="#4CAF50" />
+        <Text style={styles.permissionTitle}>Camera access needed</Text>
+        <Text style={styles.permissionText}>
+          {blocked
+            ? 'Camera permission is turned off. Enable it in Settings to scan the store QR code.'
+            : 'Allow camera access to scan the store QR code for this coupon.'}
+        </Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={() => (blocked ? Linking.openSettings() : resolvePermission(true))}
+        >
+          <Text style={styles.permissionButtonText}>
+            {blocked ? 'Open Settings' : 'Allow Camera'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <QRCodeScanner
-        onRead={onSuccess}
-        flashMode="auto"
-        reactivate={true}
-        reactivateTimeout={2500}
-        showMarker={true}
-        markerStyle={styles.marker}
-        cameraStyle={{ height: '100%' }}
-        topContent={
-          <View style={styles.topContent}>
-            <Text style={styles.title}>Scan QR Code</Text>
-            <Text style={styles.subtitle}>Align code within frame</Text>
-            {coupon?.vendorName && (
-              <Text style={styles.vendorText}>For: {coupon.vendorName}</Text>
-            )}
-            {/* DEBUG: Show expected ID - Remove in production */}
-            <Text style={[styles.vendorText, { fontSize: 12, color: '#ffeb3b' }]}>
-              Expected ID: {coupon?.couponId}
-            </Text>
+      {permission !== 'granted' ? (
+        renderPermissionView()
+      ) : (
+        // Only mount the camera while this screen is focused, so it is released
+        // when navigating away and re-opened cleanly on return.
+        isFocused && !showSuccess && (
+          <View style={StyleSheet.absoluteFill}>
+            <Camera
+              style={StyleSheet.absoluteFill}
+              cameraType={CameraType.Back}
+              scanBarcode={true}
+              allowedBarcodeTypes={['qr']}
+              onReadCode={(event) => onSuccess(event?.nativeEvent?.codeStringValue)}
+              // The native frame only reports codes that sit entirely inside a
+              // 300x150 box (sized for 1D barcodes), so square QR codes were
+              // never delivered on Android. Scan the whole preview instead and
+              // draw the guide marker below in JS.
+              showFrame={false}
+              scanThrottleDelay={1000}
+            />
+            <View style={styles.markerContainer} pointerEvents="none">
+              <View style={styles.marker} />
+            </View>
+            <View style={styles.topContent} pointerEvents="none">
+              <Text style={styles.title}>Scan QR Code</Text>
+              <Text style={styles.subtitle}>Align code within frame</Text>
+              {coupon?.vendorName && (
+                <Text style={styles.vendorText}>For: {coupon.vendorName}</Text>
+              )}
+            </View>
+            <View style={styles.bottomWrapper}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => navigation.goBack()}
+              >
+                <MaterialIcons name="close" size={28} color="#fff" />
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        }
-        bottomContent={
-          <View style={styles.bottomWrapper}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => navigation.goBack()}
-            >
-              <MaterialIcons name="close" size={28} color="#fff" />
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        }
-      />
+        )
+      )}
+
+      {/* Rendered as a sibling overlay so the back control stays visible and
+          tappable whatever state the camera view is in. */}
+      <SafeAreaView style={styles.overlayHeader} pointerEvents="box-none">
+        <TouchableOpacity
+          style={styles.overlayBackButton}
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons name="arrow-back" size={26} color="#fff" />
+        </TouchableOpacity>
+        <Text style={styles.overlayTitle}>Scan the QR</Text>
+      </SafeAreaView>
 
       <Modal visible={showSuccess} transparent>
         <View style={styles.modalOverlay}>
-          <ConfettiCannon count={120} origin={{ x: -10, y: 0 }} fadeOut />
+          <ConfettiCannon count={60} origin={{ x: -10, y: 0 }} fadeOut />
 
           <Animated.View
             style={[
@@ -658,15 +739,51 @@ const onSuccess = async (e) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  topContent: {
-    padding: 24,
+  overlayHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.75)',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  overlayBackButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  overlayTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+  topContent: {
+    position: 'absolute',
+    top: 100,
+    left: 24,
+    right: 24,
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   title: { fontSize: 22, color: '#4CAF50', fontWeight: 'bold', marginBottom: 6 },
   subtitle: { fontSize: 16, color: '#fff', textAlign: 'center' },
   vendorText: { fontSize: 15, color: '#fff', marginTop: 12, fontWeight: '600' },
-  bottomWrapper: { alignItems: 'center', padding: 20 },
+  bottomWrapper: {
+    position: 'absolute',
+    bottom: 48,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    padding: 20,
+  },
   cancelButton: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255,0,0,0.8)',
@@ -676,7 +793,40 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cancelText: { color: '#fff', fontSize: 18, marginLeft: 10, fontWeight: '600' },
-  marker: { borderColor: '#4CAF50', borderWidth: 4, borderRadius: 16 },
+  markerContainer: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  marker: {
+    width: 250,
+    height: 250,
+    borderColor: '#4CAF50',
+    borderWidth: 4,
+    borderRadius: 16,
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  permissionTitle: { fontSize: 20, color: '#fff', fontWeight: 'bold', marginTop: 16 },
+  permissionText: {
+    fontSize: 15,
+    color: '#ccc',
+    textAlign: 'center',
+    marginTop: 10,
+    lineHeight: 22,
+  },
+  permissionButton: {
+    marginTop: 24,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 30,
+  },
+  permissionButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',

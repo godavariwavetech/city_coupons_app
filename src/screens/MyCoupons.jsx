@@ -519,12 +519,16 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingHorizontal: 20,
     // paddingVertical: 6,
+    // iOS TextInputs have no intrinsic vertical padding, so give the bar a fixed height.
+    height: 48,
     marginHorizontal: 15,
     marginTop: 8,
     // marginBottom: 20,
   },
   searchInput: {
     flex: 1,
+    height: '100%',
+    paddingVertical: 0,
     marginLeft: responsiveWidth(2),
     fontSize: responsiveFontSize(1.8),
     color: "#000",

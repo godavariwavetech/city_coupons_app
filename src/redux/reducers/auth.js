@@ -130,6 +130,19 @@ export const updateUserProfile = createAsyncThunk(
     }
   }
 );
+
+export const deleteUserAccount = createAsyncThunk(
+  'auth/deleteUserAccount',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const response = await api.delete(`${endpoints.GET_USER_PROFILE}/${userId}`);
+      return response.data;
+    } catch (err) {
+      const msg = err?.response?.data?.message || err.message || 'Failed to delete account';
+      return rejectWithValue(msg);
+    }
+  }
+);
 export const fetchCategoriesWithVendors = createAsyncThunk(
   'home/fetchCategoriesWithVendors',
   async (_, { rejectWithValue }) => {

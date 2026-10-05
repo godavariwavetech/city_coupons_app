@@ -84,7 +84,6 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 5
         versionName "1.0.4"
-        missingDimensionStrategy 'react-native-camera', 'general'
     }
     signingConfigs {
         debug {

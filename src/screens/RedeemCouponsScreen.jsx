@@ -196,6 +196,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { fetchRedeemableCoupons } from '../redux/reducers/auth';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -317,6 +318,13 @@ const RedeemCouponsScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
+        <TouchableOpacity
+          style={[styles.backButton, { top: insets.top + 20 }]}
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="chevron-back" size={26} color="#003366" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Redeem with {pointsEntered} Points</Text>
         <Text style={styles.headerSubtitle}>
           {coupons.length > 0
@@ -351,9 +359,15 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
+    paddingHorizontal: 48, // keep the centered title clear of the back button
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#EEE',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 16,
+    zIndex: 1,
   },
   headerTitle: {
     fontSize: 22,
