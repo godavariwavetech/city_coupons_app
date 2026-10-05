@@ -10,6 +10,9 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -116,6 +119,19 @@ const OtpVerificationScreen = ({ navigation, route }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
+      {/* iOS doesn't resize the window for the keyboard (Android's adjustResize
+          does), so push the content up and let it scroll while typing. */}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + responsiveHeight(3) }]}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        showsVerticalScrollIndicator={false}
+      >
       <Image source={require("../assets/icon2.png")} style={styles.logo} resizeMode="contain" />
 
       <Text style={styles.title}>Enter verification code</Text>
@@ -153,6 +169,21 @@ const OtpVerificationScreen = ({ navigation, route }) => {
         )}
       </View>
 
+      {/* Verify Button */}
+      <TouchableOpacity
+        style={[styles.verifyButton, loading && { backgroundColor: "#666" }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.verifyText}>Verify</Text>
+        )}
+      </TouchableOpacity>
+      </ScrollView>
+      </KeyboardAvoidingView>
+
       {/* Modal */}
       <Modal visible={modalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -167,19 +198,6 @@ const OtpVerificationScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-
-      {/* Verify Button */}
-      <TouchableOpacity
-        style={[styles.verifyButton, loading && { backgroundColor: "#666" }]}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.verifyText}>Verify</Text>
-        )}
-      </TouchableOpacity>
     </View>
   );
 };
@@ -190,6 +208,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  flex: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     alignItems: "center",
     justifyContent: "center",
   },
