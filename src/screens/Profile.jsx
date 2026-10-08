@@ -142,7 +142,7 @@ function Profile({ navigation }) {
       setShowDeleteModal(false);
       await AsyncStorage.clear();
       dispatch(logout());
-      navigation.reset({ index: 0, routes: [{ name: "LoginScreen" }] });
+      navigation.reset({ index: 0, routes: [{ name: "BniLoginScreen" }] });
     } catch (error) {
       Alert.alert("Error", typeof error === "string" ? error : "Failed to delete account. Please try again.");
     } finally {
