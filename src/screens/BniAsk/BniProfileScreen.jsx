@@ -436,7 +436,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   ScrollView,
   TextInput,
   ActivityIndicator,
@@ -623,7 +622,7 @@ const BniProfileScreen = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
@@ -829,7 +828,7 @@ const BniProfileScreen = ({ navigation }) => {
       </ScrollView>
 
       <VendorTermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
-    </SafeAreaView>
+    </View>
   );
 };
 

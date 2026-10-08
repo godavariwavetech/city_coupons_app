@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   ScrollView,
   Image,
   ActivityIndicator,
@@ -77,7 +76,7 @@ const BniVendorHomeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
@@ -194,7 +193,7 @@ const BniVendorHomeScreen = ({ navigation }) => {
           <View style={{ height: 40 }} />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

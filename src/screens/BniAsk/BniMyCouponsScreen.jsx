@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   FlatList,
   Image,
   ActivityIndicator,
@@ -108,7 +107,7 @@ const BniMyCouponsScreen = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
@@ -149,7 +148,7 @@ const BniMyCouponsScreen = ({ navigation }) => {
       >
         <Feather name="plus" size={32} color={COLORS.white} />
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 

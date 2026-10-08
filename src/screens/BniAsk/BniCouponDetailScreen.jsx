@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   ScrollView,
   ImageBackground,
 } from 'react-native';
@@ -40,7 +39,7 @@ const BniCouponDetailScreen = ({ navigation, route }) => {
     .filter(Boolean);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <ImageBackground
@@ -121,7 +120,7 @@ const BniCouponDetailScreen = ({ navigation, route }) => {
           <Text style={styles.editText}>Edit</Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

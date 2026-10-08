@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  SafeAreaView,
   ScrollView,
   Image,
   KeyboardAvoidingView,
@@ -191,7 +190,7 @@ const BniAddNewCouponScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
@@ -485,7 +484,7 @@ const BniAddNewCouponScreen = ({ navigation, route }) => {
         }}
         onCancel={() => setShowExpiryPicker(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
