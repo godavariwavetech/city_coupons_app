@@ -41,6 +41,23 @@ platform :ios do
       # certificate and profile itself through the App Store Connect API key
       # (project already uses automatic signing). Key needs Admin access.
       UI.important("MATCH_GIT_URL not set - using Xcode automatic signing via API key")
+
+      # Every CI runner starts with an empty keychain, so Xcode creates a new
+      # certificate each run until the account hits Apple's limit. Revoke the
+      # API-created ones first; nothing reuses them between runs.
+      Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+        key_id: key_id,
+        issuer_id: issuer_id,
+        key: Base64.decode64(key_b64)
+      )
+      Spaceship::ConnectAPI::Certificate.all.each do |cert|
+        UI.message("Certificate #{cert.id}: #{cert.certificate_type} '#{cert.name}' " \
+                   "(#{cert.display_name}), expires #{cert.expiration_date}")
+        next unless cert.display_name == "Created via API"
+        UI.important("Revoking API-created certificate #{cert.id} (#{cert.certificate_type})")
+        cert.delete!
+      end
+
       key_file = File.join(Dir.tmpdir, "AuthKey_#{key_id}.p8")
       File.write(key_file, Base64.decode64(key_b64))
       xcargs = "-allowProvisioningUpdates " \
