@@ -335,20 +335,28 @@ import {
 } from "react-native-responsive-dimensions";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategoriesWithVendors } from "../redux/reducers/auth";
-import CategorySkeleton from '../components/CategorySkeleton'; 
+import { fetchCategoriesWithVendors, fetchUserProfile } from "../redux/reducers/auth";
+import CategorySkeleton from '../components/CategorySkeleton';
+import BniLogo from './BniAsk/components/BniLogo';
 const MyCoupons = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const { categories, categoriesLoading, categoriesError } = useSelector(
+  const { categories, categoriesLoading, categoriesError, profile, userId } = useSelector(
     (state) => state.Auth
   );
 
   useEffect(() => {
     dispatch(fetchCategoriesWithVendors());
   }, [dispatch]);
+
+  // Make sure the header avatar is available even if Home hasn't loaded the profile yet
+  useEffect(() => {
+    if (userId && !profile) {
+      dispatch(fetchUserProfile(userId));
+    }
+  }, [dispatch, userId, profile]);
 
   // Horizontal Store Card
   const renderStoreCard = ({ item }) => (
@@ -424,11 +432,11 @@ const MyCoupons = () => {
         <View> 
           {/* <Text style={styles.cityText}>Rajahmundry</Text>
           <Text style={styles.addressText}>dr no 72-32-7, narayana ...</Text> */}
-           <Image source={require('../assets/icon.png')} style={styles.profileImage1} />
+           <BniLogo style={styles.profileImage1} />
         </View>
         <TouchableOpacity  onPress={()=>{navigation.navigate("Profile")}} >
           <Image
-            source={require("../assets/profile1.png")}
+            source={profile?.profile ? { uri: profile.profile } : require("../assets/profile1.png")}
             style={styles.profileImage}
           />
         </TouchableOpacity>
@@ -515,7 +523,7 @@ const styles = StyleSheet.create({
   searchContainer: {
    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#003366',
+    backgroundColor: '#002161',
     borderRadius: 25,
     paddingHorizontal: 20,
     // paddingVertical: 6,
@@ -618,7 +626,7 @@ const styles = StyleSheet.create({
   },
   profileImage1: {
     width: 150,
-    height: 50,
+    height: 80,
     borderRadius: 20,
   },
 });

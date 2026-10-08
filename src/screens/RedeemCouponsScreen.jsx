@@ -37,7 +37,7 @@
 //   if (couponsLoading) {
 //     return (
 //       <SafeAreaView style={styles.container}>
-//         <ActivityIndicator size="large" color="#1E3A8A" style={{ marginTop: 50 }} />
+//         <ActivityIndicator size="large" color="#002161" style={{ marginTop: 50 }} />
 //         <Text style={styles.loadingText}>Loading available coupons...</Text>
 //       </SafeAreaView>
 //     );
@@ -126,7 +126,7 @@
 //   vendorName: {
 //     fontSize: 18,
 //     fontWeight: '600',
-//     color: '#1E3A8A',
+//     color: '#002161',
 //   },
 //   title: {
 //     fontSize: 20,
@@ -301,7 +301,7 @@ const RedeemCouponsScreen = ({ route, navigation }) => {
   if (couponsLoading) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#003366" style={{ marginTop: 50 }} />
+        <ActivityIndicator size="large" color="#002161" style={{ marginTop: 50 }} />
         <Text style={styles.loadingText}>Loading available coupons...</Text>
       </View>
     );
@@ -323,7 +323,7 @@ const RedeemCouponsScreen = ({ route, navigation }) => {
           onPress={() => navigation.goBack()}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Ionicons name="chevron-back" size={26} color="#003366" />
+          <Ionicons name="chevron-back" size={26} color="#002161" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Redeem with {pointsEntered} Points</Text>
         <Text style={styles.headerSubtitle}>
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
   },
   vendorName: {
     fontSize: 16,
-    color: '#003366',
+    color: '#002161',
     fontFamily: 'SF-Pro-Display-Medium',
     marginBottom: 4,
   },

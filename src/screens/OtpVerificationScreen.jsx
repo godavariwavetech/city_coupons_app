@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   resendLink: {
     fontSize: responsiveFontSize(1.8),
     fontFamily: "SF-Pro-Display-Semibold",
-    color: "#001D4A",
+    color: "#002161",
   },
   resendTimer: {
     fontSize: responsiveFontSize(1.8),
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   verifyButton: {
-    backgroundColor: "#001D4A",
+    backgroundColor: "#002161",
     marginTop: responsiveHeight(5),
     width: responsiveWidth(50),
     height: responsiveHeight(6),
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalButton: {
-    backgroundColor: "#001D4A",
+    backgroundColor: "#002161",
     borderRadius: 25,
     paddingVertical: responsiveHeight(1.2),
     paddingHorizontal: responsiveWidth(10),

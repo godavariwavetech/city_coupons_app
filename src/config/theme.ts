@@ -9,7 +9,7 @@ export const fonts = {
 };
 
 export const lightTheme = {
-  primary: '#064081',        // Main brand color
+  primary: '#002161',        // Main brand color
   secondry: '#02B0E8',       // Accent color
   text: '#414042',           // Default text color
 
@@ -25,7 +25,7 @@ export const lightTheme = {
 };
 
 export const darkTheme = {
-  primary: '#064081',
+  primary: '#002161',
   secondry: '#02B0E8',
   text: '#FFFFFF',
 

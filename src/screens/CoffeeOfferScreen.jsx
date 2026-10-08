@@ -427,6 +427,7 @@ const CoffeeOfferScreen = () => {
   };
 
   const handleRedeemNow = () => {
+    console.log('[Flow] Redeem Now → QRScannerScreen, coupon:', JSON.stringify(coupon, null, 2));
     navigation.navigate('QRScannerScreen', { coupon });
   };
 

@@ -116,7 +116,7 @@
 //     if (couponHistoryLoading) {
 //       return (
 //         <View style={styles.center}>
-//           <ActivityIndicator size="large" color="#1E3A8A" />
+//           <ActivityIndicator size="large" color="#002161" />
 //           <Text style={styles.loadingText}>Loading your history...</Text>
 //         </View>
 //       );
@@ -180,7 +180,7 @@
 //         <View style={styles.filterContainer}>
 //           <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
 //             <Text style={styles.filterText}>{selectedFilterText}</Text>
-//             <MaterialCommunityIcons name="calendar-blank" size={18} color="#1E3A8A" />
+//             <MaterialCommunityIcons name="calendar-blank" size={18} color="#002161" />
 //           </TouchableOpacity>
 //         </View>
 
@@ -251,7 +251,7 @@
 //   },
 //   filterText: {
 //     fontSize: 14,
-//     color: '#1E3A8A',
+//     color: '#002161',
 //     fontWeight: '500',
 //   },
 //   listContainer: { paddingHorizontal: 16 },
@@ -310,7 +310,7 @@
 //     marginBottom: 8,
 //   },
 //   retryText: {
-//     color: '#1E3A8A',
+//     color: '#002161',
 //     fontWeight: '600',
 //     fontSize: 15,
 //   },
@@ -449,7 +449,7 @@ const MyCouponHistory = ({ navigation }) => {
     if (couponHistoryLoading) {
       return (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#1E3A8A" />
+          <ActivityIndicator size="large" color="#002161" />
           <Text style={styles.loadingText}>Loading your history...</Text>
         </View>
       );
@@ -525,7 +525,7 @@ if (filteredCouponHistory.length === 0) {
         <View style={styles.filterContainer}>
           <TouchableOpacity style={styles.filterButton} onPress={handleFilterPress}>
             <Text style={styles.filterText}>{selectedFilterText}</Text>
-          <MaterialCommunityIcons name="calendar-month" size={18} color="#1E3A8A" />
+          <MaterialCommunityIcons name="calendar-month" size={18} color="#002161" />
           </TouchableOpacity>
         </View>
 
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
   },
   filterText: {
     fontSize: 14,
-    color: '#1E3A8A',
+    color: '#002161',
     fontWeight: '500',
     fontFamily:"SF-Pro-Display-Regular"
   },
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   retryText: {
-    color: '#1E3A8A',
+    color: '#002161',
     fontWeight: '600',
     fontSize: 15,
   },

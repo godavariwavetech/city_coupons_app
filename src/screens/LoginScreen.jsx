@@ -93,7 +93,7 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.welcomeText}>Welcome to</Text>
 
         <Image
-          source={require("../assets/icon2.png")}
+          source={require("../assets/icon.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     fontFamily: "SF-Pro-Display-Medium",
   },
   loginButton: {
-    backgroundColor: "#001D4A",
+    backgroundColor: "#002161",
     width: responsiveWidth(40),
     height: responsiveHeight(6),
     borderRadius: 30,

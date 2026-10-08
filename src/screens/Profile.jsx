@@ -123,7 +123,7 @@ function Profile({ navigation }) {
             // 3. Reset Navigation Stack
             navigation.reset({
               index: 0,
-              routes: [{ name: "LoginScreen" }],
+              routes: [{ name: "BniLoginScreen" }],
             });
           } catch (error) {
             console.error("Logout error:", error);
@@ -541,7 +541,7 @@ bniTagContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'center',
-    backgroundColor: '#B22222', // Professional Dark Red for BNI
+    backgroundColor: '#002161', // Brand navy
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 20,

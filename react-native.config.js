@@ -7,5 +7,7 @@ module.exports={
        '@react-native-firebase/app': {platforms: {ios: null}},
        '@react-native-firebase/auth': {platforms: {ios: null}},
        '@react-native-firebase/messaging': {platforms: {ios: null}},
+       // Android-only SMS Retriever; its podspec has no iOS sources.
+       'react-native-otp-verify': {platforms: {ios: null}},
      },
 }

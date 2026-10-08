@@ -32,7 +32,7 @@ const SplashScreen = ({ navigation }) => {
         barStyle="dark-content"
       />
       <Image
-        source={require('../assets/icon2.png')}
+        source={require('../assets/icon.png')}
         style={styles.logo}
         resizeMode="contain"
       />

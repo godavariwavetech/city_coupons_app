@@ -21,8 +21,9 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import QRScannerModal from '../screens/QRScannerModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllCoupons, fetchTrendingCoupons,fetchBniCoupons } from '../redux/reducers/auth';
+import { fetchAllCoupons, fetchTrendingCoupons, fetchBniCoupons, fetchUserProfile } from '../redux/reducers/auth';
 import { CouponGridSkeleton, TrendingSkeleton } from '../components/SkeletonLoader';
+import BniLogo from './BniAsk/components/BniLogo';
 
 const Home = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
@@ -41,6 +42,7 @@ const Home = ({ navigation, route }) => {
     couponsError,
     userId,
     bniCoupons = [],     // <--- Added
+    profile,
   bniLoading,
   } = useSelector((state) => state.Auth);
 
@@ -55,6 +57,7 @@ const Home = ({ navigation, route }) => {
       dispatch(fetchTrendingCoupons(userId)),
       dispatch(fetchAllCoupons(userId)),
       dispatch(fetchBniCoupons(userId)),
+      dispatch(fetchUserProfile(userId)),
     ]);
   }, [dispatch, userId]);
 
@@ -93,6 +96,7 @@ const Home = ({ navigation, route }) => {
   };
 
   const handleCardPress = (coupon) => {
+    console.log('[Flow] Home → CoffeeOfferScreen, coupon:', JSON.stringify(coupon, null, 2));
     navigation.navigate('CoffeeOfferScreen', { coupon });
   };
 
@@ -124,23 +128,23 @@ const renderTrendingCard = ({ item }) => {
         {/* RIGHT SECTION */}
        <View style={styles.bniRightSection}>
   <Image
-    source={{ uri: item.vendorLogo }}
+    source={{ uri: item.imageUrl }}
     style={styles.bniVendorLogo}
     resizeMode="cover" // Use cover to fill the 100% width/height
   />
 </View>
 
-        {/* USED OVERLAY */}
+        {/* USED BADGE */}
         {isUsed && (
-          <View style={styles.usedOverlay}>
-            <Text style={styles.usedText}>USED</Text>
+          <View style={styles.usedBadge}>
+            <Text style={styles.usedBadgeText}>USED</Text>
           </View>
         )}
       </TouchableOpacity>
     </View>
   );
 };
- 
+
 const renderBniCard = ({ item }) => {
   const isUsed = item.isUsed === 1;
 
@@ -174,10 +178,10 @@ const renderBniCard = ({ item }) => {
   />
 </View>
 
-        {/* USED OVERLAY */}
+        {/* USED BADGE */}
         {isUsed && (
-          <View style={styles.usedOverlay}>
-            <Text style={styles.usedText}>USED</Text>
+          <View style={styles.usedBadge}>
+            <Text style={styles.usedBadgeText}>USED</Text>
           </View>
         )}
       </TouchableOpacity>
@@ -195,11 +199,11 @@ const renderCouponCard = (coupon) => {
       {isUsed ? (
         <View>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: coupon.shopImage }} style={styles.couponImage} resizeMode="cover" />
+            <Image source={{ uri: coupon.imageUrl }} style={styles.couponImage} resizeMode="cover" />
             <Image source={{ uri: coupon.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
             {isUsed && (
-              <View style={styles.usedOverlay}>
-                <Text style={styles.usedText}>USED</Text>
+              <View style={styles.usedBadge}>
+                <Text style={styles.usedBadgeText}>USED</Text>
               </View>
             )}
           </View>
@@ -218,7 +222,7 @@ const renderCouponCard = (coupon) => {
       ) : (
         <TouchableOpacity onPress={() => handleCardPress(coupon)}>
           <View style={styles.imageContainer}>
-            <Image source={{ uri: coupon.shopImage }} style={styles.couponImage} resizeMode="cover" />
+            <Image source={{ uri: coupon.imageUrl }} style={styles.couponImage} resizeMode="cover" />
             <Image source={{ uri: coupon.vendorLogo }} style={styles.logoOverlay} resizeMode="cover" />
           </View>
           <View style={styles.couponContent}>
@@ -250,18 +254,21 @@ const renderCouponCard = (coupon) => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#003366']} // Android spinner color
-            tintColor="#003366" // iOS spinner color
+            colors={['#002161']} // Android spinner color
+            tintColor="#002161" // iOS spinner color
           />
         }
       >
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity>
-            <Image source={require('../assets/icon.png')} style={styles.profileImage1} />
+            <BniLogo style={styles.profileImage1} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
-            <Image source={require('../assets/profile1.png')} style={styles.profileImage} />
+            <Image
+              source={profile?.profile ? { uri: profile.profile } : require('../assets/profile1.png')}
+              style={styles.profileImage}
+            />
           </TouchableOpacity>
         </View>
 
@@ -306,10 +313,13 @@ const renderCouponCard = (coupon) => {
 
 
 
-{/* <View style={styles.bniSectionContainer}> */}
-<View style={[styles.sectionHeader,{ marginTop: 20,justifyContent:"flex-start", gap:5,padding:0,margin:0, marginBottom: 16, paddingHorizontal: 20 }]}>
-   <Image 
-      source={require('../assets/bnilogoo.png')} 
+
+{/* BNI section (heading included) only shows when there are BNI coupons */}
+{bniCoupons.length > 0 && (
+<View style={styles.bniSectionContainer}>
+<View style={[styles.sectionHeader,{ justifyContent:"flex-start", gap:5,padding:0,margin:0, marginBottom: 16, paddingHorizontal: 20 }]}>
+   <Image
+      source={require('../assets/bnilogoo.png')}
       style={styles.bniBadgeImage}
       resizeMode="contain"
     />
@@ -317,20 +327,20 @@ const renderCouponCard = (coupon) => {
 </View>
 
 {bniLoading && !refreshing ? (
-  <TrendingSkeleton /> // Reusing your trending skeleton for horizontal list
-) : bniCoupons.length > 0 ? (
+  <TrendingSkeleton />
+) : (
   <FlatList
     data={bniCoupons}
-    renderItem={renderBniCard} // Using the new BNI card design
+    renderItem={renderBniCard}
     keyExtractor={(item) => `bni-${item.couponId}`}
     horizontal
     showsHorizontalScrollIndicator={false}
     contentContainerStyle={styles.bniOffersList}
   />
-) : (
-  <Text style={[styles.emptyText, { color: '#FFFFFF' }]}>No BNI exclusive offers available</Text>
 )}
-{/* </View> */}
+</View>
+)}
+
         {/* Coupon Store */}
         <View style={[styles.sectionHeader, { marginTop: 24 }]}>
           <View>
@@ -371,9 +381,9 @@ const styles = StyleSheet.create({
   // ... your existing styles (unchanged)
   container: { flex: 1, backgroundColor: '#FFFFFF' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 18 },
-  profileImage1: { width: 150, height: 50, borderRadius: 20 },
+  profileImage1: { width: 150, height: 80, borderRadius: 20 },
   profileImage: { width: 40, height: 40, borderRadius: 20 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#003366', borderRadius: 25, paddingHorizontal: 20, marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
+  searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#002161', borderRadius: 25, paddingHorizontal: 20, marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
   searchInput: { flex: 1, marginLeft: 12, fontSize: 15, color: '#FFFFFF' ,     fontFamily:"SF-Pro-Display-Regular"},
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 16 },
   sectionTitle: { fontSize: 16,  color: '#000000', letterSpacing: 0.5 ,
@@ -398,21 +408,29 @@ const styles = StyleSheet.create({
   couponTitle: { fontSize: 14, fontWeight: '600', color: '#000000', flex: 1, fontFamily:"SF-Pro-Display-Bold" },
   couponSubtitle: { fontSize: 12, color: '#666666', marginBottom: 4,     fontFamily:"SF-Pro-Display-Regular" },
   couponCodeText: { fontSize: 13, fontWeight: '600', color: '#000000',     fontFamily:"SF-Pro-Display-Semibold" },
-  usedOverlay: {
+  usedBadge: {
   position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0,0,0,0.6)',
-  justifyContent: 'center',
-  alignItems: 'center',
-  borderRadius: 12,
+  top: 8,
+  right: 8,
+  backgroundColor: '#D90429',
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#FFFFFF',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 3,
+  elevation: 6,
+  zIndex: 30,
 },
-usedText: {
-  color: '#e61414ff',
-  fontSize: 18,
+usedBadgeText: {
+  color: '#ffffff',
+  fontSize: 11,
   fontWeight: 'bold',
+  letterSpacing: 0.8,
+  textTransform: 'uppercase',
   fontFamily: 'SF-Pro-Display-Bold',
 },
 disabledContent: {
@@ -444,8 +462,8 @@ bniBadgeImage: {
 
   // BNI Section Container with Blue Background
   bniSectionContainer: {
-    backgroundColor: '#1e3a8a', // Deep blue background
-    marginTop: 24,
+    backgroundColor: '#fff', // Deep blue background
+    // marginTop: 24,
     marginHorizontal: 0,
     paddingVertical: 20,
     paddingBottom: 30,

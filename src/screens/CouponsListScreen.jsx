@@ -414,7 +414,7 @@
 //         {/* Loading State */}
 //         {vendorCouponsLoading && (
 //           <View style={styles.loadingContainer}>
-//             <ActivityIndicator size="large" color="#003366" />
+//             <ActivityIndicator size="large" color="#002161" />
 //             <Text style={styles.loadingText}>Loading amazing offers...</Text>
 //           </View>
 //         )}
@@ -566,7 +566,7 @@
 //   couponCode: {
 //     fontSize: 16,
 //     fontWeight: '700',
-//     color: '#003366',
+//     color: '#002161',
 //     marginBottom: 6,
 //   },
 //   description: {
@@ -610,7 +610,7 @@
 //   emptySubText: { fontSize: 14, color: '#aaa', marginTop: 8 },
 //   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
 //   errorText: { color: 'red', fontSize: 16, textAlign: 'center', marginBottom: 16 },
-//   retryButton: { padding: 12, backgroundColor: '#003366', borderRadius: 8 },
+//   retryButton: { padding: 12, backgroundColor: '#002161', borderRadius: 8 },
 //   retryText: { color: '#fff', fontWeight: '600' },
 //   listContainer: { paddingTop: 10 },
 //   usedCouponContainer: {
@@ -645,7 +645,7 @@
 // },
 // couponCodeFooter: {
 //   fontSize: 14,
-//   color: '#003366',
+//   color: '#002161',
 //   fontWeight: '600',
 //   marginTop: 4,
 // },
@@ -939,7 +939,7 @@ const styles = StyleSheet.create({
   emptySubText: { fontSize: 14, color: '#aaa', marginTop: 8 },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   errorText: { color: 'red', fontSize: 16, textAlign: 'center', marginBottom: 16 },
-  retryButton: { padding: 12, backgroundColor: '#003366', borderRadius: 8 },
+  retryButton: { padding: 12, backgroundColor: '#002161', borderRadius: 8 },
   retryText: { color: '#fff', fontWeight: '600' },
 });
 

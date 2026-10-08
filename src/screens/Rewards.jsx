@@ -103,7 +103,7 @@
 //         <View style={styles.pointsCard}>
 //           <Text style={styles.pointsLabel}>Your Current Points</Text>
 //           {profileLoading ? (
-//             <ActivityIndicator size="large" color="#1E3A8A" />
+//             <ActivityIndicator size="large" color="#002161" />
 //           ) : (
 //             <Text style={styles.pointsValue}>{totalPoints}</Text>
 //           )}
@@ -115,7 +115,7 @@
 //           <Text style={styles.sectionTitle}>Redeemed Coupons</Text>
 
 //           {rewardsLoading ? (
-//             <ActivityIndicator size="large" color="#1E3A8A" style={{ marginVertical: 40 }} />
+//             <ActivityIndicator size="large" color="#002161" style={{ marginVertical: 40 }} />
 //           ) : !rewardsCoupons || rewardsCoupons.length === 0 ? (
 //             <Text style={styles.emptyText}>You haven't redeemed any coupons yet.</Text>
 //           ) : (
@@ -180,7 +180,7 @@
 //   pointsValue: {
 //     fontSize: 48,
 //     fontWeight: 'bold',
-//     color: '#1E3A8A',
+//     color: '#002161',
 //     marginBottom: 8,
 //   },
 //   pointsNote: {
@@ -415,7 +415,7 @@ const handleSubmitPoints = () => {
         <View style={styles.pointsCard}>
           <Text style={styles.pointsLabel}>Your Current Points</Text>
           {profileLoading ? (
-            <ActivityIndicator size="large" color="#1E3A8A" />
+            <ActivityIndicator size="large" color="#002161" />
           ) : (
             <>
               <Text style={styles.pointsValue}>{totalPoints}</Text>
@@ -434,7 +434,7 @@ const handleSubmitPoints = () => {
           <Text style={styles.sectionTitle}>Redeemed Coupons</Text>
 
           {rewardsLoading ? (
-            <ActivityIndicator size="large" color="#1E3A8A" style={{ marginVertical: 40 }} />
+            <ActivityIndicator size="large" color="#002161" style={{ marginVertical: 40 }} />
           ) : !rewardsCoupons || rewardsCoupons.length === 0 ? (
             <Text style={styles.emptyText}>You haven't redeemed any coupons yet.</Text>
           ) : (
@@ -543,11 +543,11 @@ const styles = StyleSheet.create({
   pointsValue: {
     fontSize: 48,
     fontFamily: 'SF-Pro-Display-Bold',
-    color: '#1E3A8A',
+    color: '#002161',
     marginBottom: 16,
   },
   redeemButton: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#002161',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 30,
@@ -691,7 +691,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF-Pro-Display-Semibold',
   },
   submitButton: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#002161',
   },
   submitText: {
     color: '#FFFFFF',

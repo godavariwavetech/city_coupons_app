@@ -394,7 +394,7 @@
 //     position: 'absolute',
 //     bottom: 0,
 //     right: 0,
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 8,
 //     borderRadius: 20,
 //     borderWidth: 3,
@@ -448,7 +448,7 @@
 //   },
 //   errorText: { color: 'red', fontSize: 12, marginTop: 4 },
 //   submitButton: {
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 16,
 //     borderRadius: 8,
 //     alignItems: 'center',
@@ -849,7 +849,7 @@
 //     position: 'absolute',
 //     bottom: 0,
 //     right: 0,
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 8,
 //     borderRadius: 20,
 //     borderWidth: 3,
@@ -942,7 +942,7 @@
 //     fontFamily: 'SF-Pro-Display-Medium',
 //   },
 //   submitButton: {
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 16,
 //     borderRadius: 8,
 //     alignItems: 'center',
@@ -1403,7 +1403,7 @@
 //     position: 'absolute',
 //     bottom: 0,
 //     right: 0,
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 8,
 //     borderRadius: 20,
 //     borderWidth: 3,
@@ -1496,7 +1496,7 @@
 //     fontFamily: 'SF-Pro-Display-Medium',
 //   },
 //   submitButton: {
-//     backgroundColor: '#001D4A',
+//     backgroundColor: '#002161',
 //     padding: 16,
 //     borderRadius: 8,
 //     alignItems: 'center',
@@ -1517,8 +1517,8 @@
 //     backgroundColor: '#fff',
 //   },
 //   optionButtonSelected: {
-//     backgroundColor: '#001D4A',
-//     borderColor: '#001D4A',
+//     backgroundColor: '#002161',
+//     borderColor: '#002161',
 //   },
 //   optionText: {
 //     color: '#000',
@@ -1685,7 +1685,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
       state: stateName.trim(),
       image: imageBase64 || '',
       referredBy: referredBy.trim(),
-      BNIMember: bniMember,
+      BNIMember: 0,
     };
 
     dispatch(registerUser(payload));
@@ -1841,23 +1841,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
           </View>
 
           {/* BIN Member */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>BIN Member</Text>
-            <View style={styles.optionRow}>
-              <TouchableOpacity
-                style={[styles.optionButton, bniMember === 1 && styles.optionButtonSelected]}
-                onPress={() => setBniMember(1)}
-              >
-                <Text style={bniMember === 1 ? styles.optionTextSelected : styles.optionText}>Yes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.optionButton, bniMember === 0 && styles.optionButtonSelected]}
-                onPress={() => setBniMember(0)}
-              >
-                <Text style={bniMember === 0 ? styles.optionTextSelected : styles.optionText}>No</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+       
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Address / Street Name</Text>
@@ -1970,7 +1954,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#001D4A',
+    backgroundColor: '#002161',
     padding: 8,
     borderRadius: 20,
     borderWidth: 3,
@@ -2059,7 +2043,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   submitButton: {
-    backgroundColor: '#001D4A',
+    backgroundColor: '#002161',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -2080,8 +2064,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   optionButtonSelected: {
-    backgroundColor: '#001D4A',
-    borderColor: '#001D4A',
+    backgroundColor: '#002161',
+    borderColor: '#002161',
   },
   optionText: {
     color: '#000',
