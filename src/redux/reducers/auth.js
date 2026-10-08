@@ -276,7 +276,7 @@ export const deleteVendorAccount = createAsyncThunk(
   'auth/deleteVendorAccount',
   async (vendorId, { rejectWithValue }) => {
     try {
-      const response = await api.delete(`${endpoints.GET_VENDOR_PROFILE}/${vendorId}`);
+      const response = await api.delete(`${endpoints.DELETE_VENDOR_ACCOUNT}/${vendorId}`);
       return response.data;
     } catch (err) {
       const msg = err?.response?.data?.message || err.message || 'Failed to delete account';
