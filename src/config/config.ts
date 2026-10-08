@@ -15,6 +15,7 @@ export const endpoints = {
   VENDOR_REGISTRATION: "vendor/register",
   GET_VENDOR_PROFILE: "vendor",
   DELETE_VENDOR_ACCOUNT: "vendors",
+  DLETE_USER_ACCOUNT: "user",
   GET_VENDOR_DASHBOARD: "vendor",
   VENDOR_COUPONS: "vendor",
   LIST_BNI_CATEGORIES: "bni/categories",
