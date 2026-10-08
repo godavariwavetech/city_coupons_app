@@ -448,8 +448,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Feather from 'react-native-vector-icons/Feather';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { COLORS, FONTS } from './theme';
-import { fetchVendorProfile, updateVendorProfile, logout, fetchBniCategories } from '../../redux/reducers/auth';
+import { fetchVendorProfile, updateVendorProfile, deleteVendorAccount, logout, fetchBniCategories } from '../../redux/reducers/auth';
 import VendorTermsModal from './components/VendorTermsModal';
+import DeleteAccountModal from '../../components/DeleteAccountModal';
 
 const getCategoryId = (cat) => cat?.id ?? cat?.categoryId ?? cat?._id;
 const getCategoryName = (cat) => cat?.name ?? cat?.categoryName ?? cat?.title ?? '';
@@ -478,6 +479,8 @@ const BniProfileScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [shopImageUri, setShopImageUri] = useState(null);
   const [shopImageName, setShopImageName] = useState('');
   const [shopImageBase64, setShopImageBase64] = useState('');
@@ -610,6 +613,21 @@ const BniProfileScreen = ({ navigation }) => {
         },
       },
     ]);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await dispatch(deleteVendorAccount(vendorId)).unwrap();
+      setShowDeleteModal(false);
+      await AsyncStorage.clear();
+      dispatch(logout());
+      navigation.reset({ index: 0, routes: [{ name: 'BniLoginScreen' }] });
+    } catch (error) {
+      Alert.alert('Error', typeof error === 'string' ? error : 'Failed to delete account. Please try again.');
+    } finally {
+      setDeletingAccount(false);
+    }
   };
 
   if (loading && !vendorProfile) {
@@ -825,9 +843,20 @@ const BniProfileScreen = ({ navigation }) => {
           <Feather name="log-out" size={18} color={COLORS.primary} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.deleteAccountButton} onPress={() => setShowDeleteModal(true)}>
+          <Feather name="trash-2" size={18} color="#d32f2f" />
+          <Text style={styles.deleteAccountText}>Delete Account</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       <VendorTermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        loading={deletingAccount}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteAccount}
+      />
     </View>
   );
 };
@@ -980,6 +1009,21 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.semibold,
     fontSize: 14,
     color: COLORS.primary,
+    marginLeft: 8,
+  },
+  deleteAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 24,
+    paddingVertical: 14,
+  },
+  deleteAccountText: {
+    fontFamily: FONTS.semibold,
+    fontSize: 14,
+    color: '#d32f2f',
     marginLeft: 8,
   },
 });
