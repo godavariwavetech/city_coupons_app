@@ -18,7 +18,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile, updateUserProfile, deleteUserAccount, logout } from "../redux/reducers/auth"; // Add logout action
+import { fetchUserProfile, updateUserProfile, deleteUserAccount, logout, fetchBniCities } from "../redux/reducers/auth"; // Add logout action
+import CityPickerModal from "../components/CityPickerModal";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // For clearing local storage
 import DeleteAccountModal from "../components/DeleteAccountModal";
 
@@ -29,7 +30,9 @@ function Profile({ navigation }) {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
 
-  const { userId, profile, loading } = useSelector((state) => state.Auth);
+  const { userId, profile, loading, bniCities = [], bniCitiesLoading, loginCityId } = useSelector(
+    (state) => state.Auth
+  );
 
   const [imageUri, setImageUri] = useState(null);
   const [imageBase64, setImageBase64] = useState("");
@@ -39,7 +42,8 @@ function Profile({ navigation }) {
   const [dob, setDob] = useState("");
   const [gender, setGender] = useState("");
   const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState(null); // { id, name } from bni/cities
+  const [cityPickerVisible, setCityPickerVisible] = useState(false);
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -55,7 +59,12 @@ function Profile({ navigation }) {
       setDob(profile.dob ? profile.dob.split("T")[0] : "");
       setGender(profile.gender || "");
       setAddress(profile.address || "");
-      setCity(profile.city || "");
+      // City from the profile, else the one returned at login, else the plain city name
+      const cityId = profile.cityId ?? loginCityId;
+      setCity(
+        bniCities.find((c) => String(c.id) === String(cityId)) ||
+          (profile.city ? { id: cityId ?? null, name: profile.city } : null)
+      );
       setState(profile.state || "");
       setPincode(profile.pincode || "");
 
@@ -64,7 +73,11 @@ function Profile({ navigation }) {
         setImageBase64("");
       }
     }
-  }, [profile]);
+  }, [profile, bniCities, loginCityId]);
+
+  useEffect(() => {
+    dispatch(fetchBniCities());
+  }, [dispatch]);
 
   useEffect(() => {
     if (userId && !profile) {
@@ -163,7 +176,8 @@ function Profile({ navigation }) {
       gender,
       dob: dob || null,
       address,
-      city,
+      city: city?.name || "",
+      cityId: city?.id ?? null,
       state,
       pincode,
       ...(imageBase64 ? { image: imageBase64 } : {}),
@@ -318,15 +332,16 @@ function Profile({ navigation }) {
         </View>
 
         <Text style={styles.label}>City</Text>
-        <View style={styles.inputCard}>
-          <TextInput
-            value={city}
-            onChangeText={setCity}
-            style={styles.input}
-            placeholder="Enter city"
-            placeholderTextColor="#999"
-          />
-        </View>
+        <TouchableOpacity
+          style={[styles.inputCard, styles.selectCard]}
+          activeOpacity={0.7}
+          onPress={() => setCityPickerVisible(true)}
+        >
+          <Text style={[styles.input, styles.selectText, !city && styles.selectPlaceholder]} numberOfLines={1}>
+            {city?.name || "Select city"}
+          </Text>
+          <Ionicons name="chevron-down" size={20} color="#999" />
+        </TouchableOpacity>
 
         <Text style={styles.label}>State</Text>
         <View style={styles.inputCard}>
@@ -393,6 +408,18 @@ function Profile({ navigation }) {
         loading={deletingAccount}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDeleteAccount}
+      />
+
+      <CityPickerModal
+        visible={cityPickerVisible}
+        cities={bniCities}
+        loading={bniCitiesLoading}
+        selectedCity={city}
+        onSelect={(c) => {
+          setCity(c);
+          setCityPickerVisible(false);
+        }}
+        onClose={() => setCityPickerVisible(false)}
       />
     </View>
   );
@@ -468,6 +495,16 @@ const styles = StyleSheet.create({
     color: "#222",
     paddingVertical: 14,
     fontFamily: "SF-Pro-Display-Medium",
+  },
+  selectCard: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  selectText: {
+    flex: 1,
+  },
+  selectPlaceholder: {
+    color: "#999",
   },
   saveBtn: {
     marginTop: 40,

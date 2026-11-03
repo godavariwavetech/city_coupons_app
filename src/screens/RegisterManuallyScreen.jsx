@@ -1563,12 +1563,12 @@ import DatePicker from 'react-native-date-picker';
 import { launchImageLibrary } from 'react-native-image-picker';
 import CustomModal from '../components/CustomModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { registerUser, resetOtpState } from '../redux/reducers/auth';
+import { registerUser, resetOtpState, fetchBniCities, setSelectedCity } from '../redux/reducers/auth';
 
 const RegisterManuallyScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const dispatch = useDispatch();
-  const { loading, message } = useSelector((state) => state.Auth);
+  const { loading, message, bniCities = [], bniCitiesLoading } = useSelector((state) => state.Auth);
 
   // Form States
   const [fullName, setFullName] = useState('');
@@ -1577,7 +1577,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
   const [gender, setGender] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(null);
   const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState(null); // { id, name } from bni/cities
   const [pincode, setPincode] = useState('');
   const [stateName, setStateName] = useState('');
   const [imageBase64, setImageBase64] = useState('');
@@ -1587,6 +1587,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
 
   // UI States
   const [errors, setErrors] = useState({});
+  const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [showGenderDropdown, setShowGenderDropdown] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -1596,6 +1597,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
 
   useEffect(() => {
     dispatch(resetOtpState());
+    dispatch(fetchBniCities());
   }, [dispatch]);
 
   useEffect(() => {
@@ -1603,6 +1605,8 @@ const RegisterManuallyScreen = ({ navigation }) => {
     if (!message) return;
 
     if (message.includes('Successfully') || message.toLowerCase().includes('registered')) {
+      // Coupons on Home are loaded for the city chosen here
+      if (city) dispatch(setSelectedCity(city));
       setModalTitle('Success');
       setModalContent('User Registered Successfully!');
       setIsSuccess(true);
@@ -1656,7 +1660,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
     if (!gender) newErrors.gender = 'Select gender';
     if (!dateOfBirth) newErrors.dateOfBirth = 'Select date of birth';
     if (!address.trim()) newErrors.address = 'Address is required';
-    if (!city.trim()) newErrors.city = 'City is required';
+    if (!city) newErrors.city = 'Select your city';
     if (!pincode.match(/^\d{6}$/)) newErrors.pincode = 'Enter valid 6-digit pincode';
     if (!stateName.trim()) newErrors.state = 'State is required';
 
@@ -1680,7 +1684,8 @@ const RegisterManuallyScreen = ({ navigation }) => {
       gender,
       dob: formatDOB(dateOfBirth),
       address: address.trim(),
-      city: city.trim(),
+      city: city.name,
+      cityId: city.id,
       pincode,
       state: stateName.trim(),
       image: imageBase64 || '',
@@ -1857,13 +1862,50 @@ const RegisterManuallyScreen = ({ navigation }) => {
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>City</Text>
-            <TextInput
-              style={styles.input}
-              value={city}
-              onChangeText={setCity}
-              placeholder="City"
-              placeholderTextColor="#888"
-            />
+            <TouchableOpacity
+              style={styles.dropdownInput}
+              onPress={() => setShowCityDropdown(!showCityDropdown)}
+            >
+              <Text style={[styles.dropdownText, !city && styles.placeholderText]} numberOfLines={1}>
+                {city?.name || 'Select City'}
+              </Text>
+              <Feather name={showCityDropdown ? 'chevron-up' : 'chevron-down'} size={20} color="#666" />
+            </TouchableOpacity>
+            {/* Inline list (not absolute) so it can scroll inside the form */}
+            {showCityDropdown && (
+              <View style={styles.cityMenu}>
+                {bniCitiesLoading && bniCities.length === 0 ? (
+                  <ActivityIndicator style={{ padding: 12 }} color="#002161" />
+                ) : bniCities.length === 0 ? (
+                  <Text style={[styles.dropdownItemText, { padding: 12, color: '#888' }]}>No cities available</Text>
+                ) : (
+                  <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                    {[...bniCities]
+                      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                      .map((c) => (
+                        <TouchableOpacity
+                          key={String(c.id)}
+                          style={styles.dropdownItem}
+                          onPress={() => {
+                            setCity(c);
+                            setShowCityDropdown(false);
+                            setErrors({ ...errors, city: null });
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.dropdownItemText,
+                              city?.id === c.id && { color: '#002161', fontWeight: '600' },
+                            ]}
+                          >
+                            {c.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                  </ScrollView>
+                )}
+              </View>
+            )}
             {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
           </View>
 
@@ -2026,6 +2068,15 @@ const styles = StyleSheet.create({
   dropdownItemText: {
     fontSize: 16,
     color: '#000',
+  },
+  cityMenu: {
+    marginTop: 4,
+    maxHeight: 220,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    overflow: 'hidden',
   },
   dateInput: {
     borderWidth: 1,

@@ -343,13 +343,14 @@ const MyCoupons = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  const { categories, categoriesLoading, categoriesError, profile, userId } = useSelector(
+  const { categories, categoriesLoading, categoriesError, profile, userId, selectedCity } = useSelector(
     (state) => state.Auth
   );
 
+  // Refetch when the user switches city (cityId is added inside the thunk)
   useEffect(() => {
     dispatch(fetchCategoriesWithVendors());
-  }, [dispatch]);
+  }, [dispatch, selectedCity?.id]);
 
   // Make sure the header avatar is available even if Home hasn't loaded the profile yet
   useEffect(() => {

@@ -73,6 +73,8 @@ bniCities: [],
 bniCitiesLoading: false,
 bniCitiesError: null,
 bniCityAdding: false,
+selectedCity: null,       // ← { id, name } chosen at registration / switched from Home
+loginCityId: null,        // ← cityId returned by user login (the account's own city)
 
 bniStates: [],
 bniStatesLoading: false,
@@ -359,11 +361,19 @@ export const deleteVendorCoupon = createAsyncThunk(
   }
 );
 
+// City the user picked (registration / Home city switcher) — sent with every coupon call
+const getCityParams = (getState) => {
+  const cityId = getState().Auth?.selectedCity?.id;
+  return cityId ? { cityId } : {};
+};
+
 export const fetchCategoriesWithVendors = createAsyncThunk(
   'home/fetchCategoriesWithVendors',
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
-      const response = await api.get(endpoints.GET_CATEGORIES_WITH_VENDORS);
+      const response = await api.get(endpoints.GET_CATEGORIES_WITH_VENDORS, {
+        params: getCityParams(getState),
+      });
       return response.data; // { status, message, data: [...] }
     } catch (err) {
       const msg = err?.response?.data?.message || err.message || 'Failed to load categories';
@@ -375,13 +385,15 @@ export const fetchCategoriesWithVendors = createAsyncThunk(
 
 export const fetchAllCoupons = createAsyncThunk(
   'home/fetchAllCoupons',
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, getState }) => {
     if (!userId) {
       return rejectWithValue('User not logged in');
     }
 
     try {
-      const response = await api.get(`/homecoupons/${userId}`);
+      const response = await api.get(`/homecoupons/${userId}`, {
+        params: getCityParams(getState),
+      });
       console.log('All Coupons Response:', response.data); // Debug
 
       // Adjust based on your actual backend response
@@ -397,13 +409,15 @@ export const fetchAllCoupons = createAsyncThunk(
 
 export const fetchTrendingCoupons = createAsyncThunk(
   'home/fetchTrendingCoupons',
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, getState }) => {
     if (!userId) {
       return rejectWithValue('User not logged in');
     }
 
     try {
-      const response = await api.get(`/trendingcoupons/${userId}`);
+      const response = await api.get(`/trendingcoupons/${userId}`, {
+        params: getCityParams(getState),
+      });
       console.log('Trending Coupons Response:', response.data); // Debug
 
       return response.data.data || response.data || [];
@@ -416,11 +430,12 @@ export const fetchTrendingCoupons = createAsyncThunk(
 );
 export const fetchVendorCoupons = createAsyncThunk(
   'vendor/fetchVendorCoupons',
-  async ({ userId, vendorId }, { rejectWithValue }) => {
+  async ({ userId, vendorId }, { rejectWithValue, getState }) => {
     try {
       const response = await api.post(`vendorcoupons`, {
         userId,
         vendorId,
+        ...getCityParams(getState),
       });
 console.log(userId,"to get all trending coupons") 
       console.log('Vendor Coupons Response:', response.data);
@@ -523,7 +538,7 @@ export const fetchRewardsCoupons = createAsyncThunk(
 
 export const fetchRedeemableCoupons = createAsyncThunk(
   'auth/fetchRedeemableCoupons',
-  async ({ userId, points }, { rejectWithValue }) => {
+  async ({ userId, points }, { rejectWithValue, getState }) => {
     if (!userId) {
       return rejectWithValue('User not logged in');
     }
@@ -537,6 +552,7 @@ export const fetchRedeemableCoupons = createAsyncThunk(
       const response = await api.post('rewardsbypoints', {
         userId,
         rewardPoints:points,
+        ...getCityParams(getState),
       });
 
       console.log('Redeemable Coupons Response:', response.data);
@@ -677,9 +693,11 @@ export const addBniIndustry = createAsyncThunk(
 
 export const fetchBniCoupons = createAsyncThunk(
   'home/fetchBniCoupons',
-  async (userId, { rejectWithValue }) => {
+  async (userId, { rejectWithValue, getState }) => {
     try {
-      const response = await api.get(`/bnicoupons/${userId}`);
+      const response = await api.get(`/bnicoupons/${userId}`, {
+        params: getCityParams(getState),
+      });
       return response.data.data || [];
     } catch (err) {
       const msg = err?.response?.data?.message || 'Failed to load BNI coupons';
@@ -735,6 +753,7 @@ export const addGivenBniConnection = createAsyncThunk(
 );
 
 
+
 const AuthSlice = createSlice({
   name: 'auth',
   initialState,
@@ -770,6 +789,14 @@ const AuthSlice = createSlice({
       state.couponHistory = [];
       state.rewardsCoupons = [];
       state.totalPoints = 0;
+      // Next login picks the city up again from the user's profile (cityId saved at registration)
+      state.selectedCity = null;
+      state.loginCityId = null;
+    },
+    setSelectedCity: (state, action) => {
+      state.selectedCity = action.payload
+        ? { id: action.payload.id, name: action.payload.name }
+        : null;
     },
     resetOtpState: (state) => {
       state.isNewUser = false;
@@ -870,6 +897,19 @@ const AuthSlice = createSlice({
         // Save login data
         state.userId = action.payload?.user_id ?? null;
         state.token = action.payload?.token ?? state.token;
+
+        // City saved on the account → Home loads coupons for it straight away
+        // (name is filled in from bni/cities on Home if the login response doesn't carry it)
+        const loginUser = action.payload?.user || action.payload?.data || {};
+        const loginCityId =
+          action.payload?.cityId ?? action.payload?.city_id ?? loginUser.cityId ?? loginUser.city_id;
+        if (loginCityId !== undefined && loginCityId !== null && loginCityId !== '') {
+          state.loginCityId = Number(loginCityId);
+          state.selectedCity = {
+            id: Number(loginCityId),
+            name: action.payload?.cityName ?? action.payload?.city ?? loginUser.cityName ?? loginUser.city ?? null,
+          };
+        }
 
         // Reset flow flags after successful login
         state.isNewUser = false;
@@ -1336,5 +1376,5 @@ const AuthSlice = createSlice({
   },
 });
 
-export const { actionLogout, resetOtpState ,logout} = AuthSlice.actions;
+export const { actionLogout, resetOtpState ,logout, setSelectedCity} = AuthSlice.actions;
 export default AuthSlice.reducer;

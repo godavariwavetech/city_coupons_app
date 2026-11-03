@@ -689,7 +689,7 @@ const CouponsListScreen = () => {
   const dispatch = useDispatch();
 
   const { vendorId } = route.params || {};
-  const { userId } = useSelector((state) => state.Auth);
+  const { userId, selectedCity } = useSelector((state) => state.Auth);
   const {
     vendorCoupons = [],
     vendorCouponsLoading = false,
@@ -701,7 +701,7 @@ const CouponsListScreen = () => {
     if (userId && vendorId) {
       dispatch(fetchVendorCoupons({ userId, vendorId }));
     }
-  }, [userId, vendorId, dispatch]);
+  }, [userId, vendorId, dispatch, selectedCity?.id]);
 
   const handleShowQR = (coupon) => {
     navigation.navigate('QRCodeScreen', { coupon });

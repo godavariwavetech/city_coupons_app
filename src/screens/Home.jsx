@@ -21,9 +21,10 @@ import Feather from 'react-native-vector-icons/Feather';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import QRScannerModal from '../screens/QRScannerModal';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllCoupons, fetchTrendingCoupons, fetchBniCoupons, fetchUserProfile } from '../redux/reducers/auth';
+import { fetchAllCoupons, fetchTrendingCoupons, fetchBniCoupons, fetchUserProfile, fetchBniCities, setSelectedCity } from '../redux/reducers/auth';
 import { CouponGridSkeleton, TrendingSkeleton } from '../components/SkeletonLoader';
 import BniLogo from './BniAsk/components/BniLogo';
+import CityPickerModal from '../components/CityPickerModal';
 
 const Home = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
@@ -44,9 +45,49 @@ const Home = ({ navigation, route }) => {
     bniCoupons = [],     // <--- Added
     profile,
   bniLoading,
+    bniCities = [],
+    bniCitiesLoading,
+    selectedCity,
   } = useSelector((state) => state.Auth);
 
- 
+  const [cityPickerVisible, setCityPickerVisible] = useState(false);
+  // True once the profile call for this login has finished (success or failure)
+  const [profileChecked, setProfileChecked] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchBniCities());
+  }, [dispatch]);
+
+  // City came from the login response with only its id: fill in the name for the header chip
+  useEffect(() => {
+    if (!selectedCity?.id || selectedCity.name || bniCities.length === 0) return;
+    const match = bniCities.find((c) => String(c.id) === String(selectedCity.id));
+    if (match) dispatch(setSelectedCity(match));
+  }, [dispatch, selectedCity, bniCities]);
+
+  // No city stored (fresh login after logout, or old account): wait for the profile call and
+  // use its cityId; only ask the user when the profile has no usable city
+  useEffect(() => {
+    if (selectedCity || bniCities.length === 0) return;
+    if (!profile && !profileChecked) return;
+    const fromProfile =
+      bniCities.find((c) => String(c.id) === String(profile?.cityId)) ||
+      (profile?.city
+        ? bniCities.find((c) => c.name?.trim().toLowerCase() === String(profile.city).trim().toLowerCase())
+        : null);
+    if (fromProfile) {
+      dispatch(setSelectedCity(fromProfile));
+      setCityPickerVisible(false);
+    } else if (profileChecked) {
+      setCityPickerVisible(true);
+    }
+  }, [dispatch, selectedCity, bniCities, profile, profileChecked]);
+
+  const handleCitySelect = (city) => {
+    dispatch(setSelectedCity(city));
+    setCityPickerVisible(false);
+  };
+
   const loadData = useCallback(async () => {
     if (!userId) {
       console.warn('No userId, cannot fetch coupons');
@@ -57,16 +98,16 @@ const Home = ({ navigation, route }) => {
       dispatch(fetchTrendingCoupons(userId)),
       dispatch(fetchAllCoupons(userId)),
       dispatch(fetchBniCoupons(userId)),
-      dispatch(fetchUserProfile(userId)),
+      dispatch(fetchUserProfile(userId)).finally(() => setProfileChecked(true)),
     ]);
   }, [dispatch, userId]);
 
-  // Initial load
+  // Initial load; selectedCity.id is read inside the coupon thunks, so switching city reloads coupons
   useEffect(() => {
     if (isFocused && userId) {
       loadData();
     }
-  }, [isFocused, loadData, userId]);
+  }, [isFocused, loadData, userId, selectedCity?.id]);
 
   // Pull-to-refresh
   const onRefresh = useCallback(async () => {
@@ -74,12 +115,6 @@ const Home = ({ navigation, route }) => {
     await loadData();
     setRefreshing(false);
   }, [loadData]);
-  // Initial load when screen comes into focus
-  useEffect(() => {
-    if (isFocused) {
-      loadData();
-    }
-  }, [isFocused, loadData]);
 
   // Handle deep link to open scanner
   useEffect(() => {
@@ -272,7 +307,30 @@ const renderCouponCard = (coupon) => {
           </TouchableOpacity>
         </View>
 
-        {/* Search */}  
+        {/* City selector */}
+        <TouchableOpacity
+          style={styles.cityCard}
+          activeOpacity={0.8}
+          onPress={() => setCityPickerVisible(true)}
+        >
+          <View style={styles.cityIconCircle}>
+            <Feather name="map-pin" size={18} color="#FFFFFF" />
+          </View>
+          <View style={styles.cityTextWrap}>
+            <Text style={styles.cityLabel}>
+              {selectedCity?.name ? 'Showing offers in' : 'Choose your city'}
+            </Text>
+            <Text style={styles.cityName} numberOfLines={1}>
+              {selectedCity?.name || 'Select City'}
+            </Text>
+          </View>
+          <View style={styles.cityChangeBtn}>
+            <Text style={styles.cityChangeText}>{selectedCity?.name ? 'Change' : 'Select'}</Text>
+            <Feather name="chevron-down" size={14} color="#002161" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Search */}
         {/* <View style={styles.searchContainer}>
           <Feather name="search" size={20} color="#FFFFFF" />
           <TextInput
@@ -372,6 +430,16 @@ const renderCouponCard = (coupon) => {
         onClose={() => setScanModalVisible(false)}
         navigation={navigation}
       />
+
+      <CityPickerModal
+        visible={cityPickerVisible}
+        cities={bniCities}
+        loading={bniCitiesLoading}
+        selectedCity={selectedCity}
+        onSelect={handleCitySelect}
+        onClose={() => setCityPickerVisible(false)}
+        dismissable={!!selectedCity}
+      />
     </View>
   );
 };
@@ -383,6 +451,54 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 18 },
   profileImage1: { width: 150, height: 80, borderRadius: 20 },
   profileImage: { width: 40, height: 40, borderRadius: 20 },
+  cityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    backgroundColor: '#F2F6FB',
+    borderWidth: 1,
+    borderColor: '#DCE6F2',
+  },
+  cityIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#002161',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cityTextWrap: { flex: 1, marginHorizontal: 12 },
+  cityLabel: {
+    fontSize: 12,
+    color: '#6B7A90',
+    fontFamily: 'SF-Pro-Display-Regular',
+  },
+  cityName: {
+    marginTop: 2,
+    fontSize: 17,
+    color: '#002161',
+    fontFamily: 'SF-Pro-Display-Bold',
+  },
+  cityChangeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#C9D6E5',
+  },
+  cityChangeText: {
+    marginRight: 4,
+    fontSize: 13,
+    color: '#002161',
+    fontFamily: 'SF-Pro-Display-Semibold',
+  },
   searchContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#002161', borderRadius: 25, paddingHorizontal: 20, marginHorizontal: 20, marginTop: 8, marginBottom: 20 },
   searchInput: { flex: 1, marginLeft: 12, fontSize: 15, color: '#FFFFFF' ,     fontFamily:"SF-Pro-Display-Regular"},
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 16 },
