@@ -136,7 +136,7 @@ function Profile({ navigation }) {
             // 3. Reset Navigation Stack
             navigation.reset({
               index: 0,
-              routes: [{ name: "BniLoginScreen" }],
+              routes: [{ name: "LoginScreen" }],
             });
           } catch (error) {
             console.error("Logout error:", error);
