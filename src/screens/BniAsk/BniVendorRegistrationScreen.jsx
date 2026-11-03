@@ -49,7 +49,10 @@ const BniVendorRegistrationScreen = ({ navigation, route }) => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const [role, setRole] = useState(route?.params?.role || 'user');
+  // iOS app is for users only, so always register as a user there
+  const [role, setRole] = useState(
+    Platform.OS === 'ios' ? 'user' : route?.params?.role || 'user'
+  );
 
   const dispatch = useDispatch();
   const {
@@ -328,24 +331,27 @@ const BniVendorRegistrationScreen = ({ navigation, route }) => {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.roleCard, role === 'vendor' && styles.roleCardActive]}
-              onPress={() => setRole('vendor')}
-            >
-              <View style={[styles.roleIconBox, role === 'vendor' && styles.roleIconBoxActive]}>
-                <Feather
-                  name="grid"
-                  size={16}
-                  color={role === 'vendor' ? COLORS.white : COLORS.textGray}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.roleTitle, role === 'vendor' && styles.roleTitleActive]}>
-                  Business/ Vendor
-                </Text>
-                <Text style={styles.roleSubtitle}>Manage coupons & offers</Text>
-              </View>
-            </TouchableOpacity>
+            {/* iOS app is for users only - Vendor option hidden on iOS */}
+            {Platform.OS !== 'ios' && (
+              <TouchableOpacity
+                style={[styles.roleCard, role === 'vendor' && styles.roleCardActive]}
+                onPress={() => setRole('vendor')}
+              >
+                <View style={[styles.roleIconBox, role === 'vendor' && styles.roleIconBoxActive]}>
+                  <Feather
+                    name="grid"
+                    size={16}
+                    color={role === 'vendor' ? COLORS.white : COLORS.textGray}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.roleTitle, role === 'vendor' && styles.roleTitleActive]}>
+                    Business/ Vendor
+                  </Text>
+                  <Text style={styles.roleSubtitle}>Manage coupons & offers</Text>
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
 
           {role === 'user' ? (
