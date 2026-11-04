@@ -1,60 +1,71 @@
+import { Platform, PermissionsAndroid } from 'react-native';
 import notifee, { AndroidImportance, AndroidStyle } from '@notifee/react-native';
 import messaging from '@react-native-firebase/messaging';
 
-export const setupNotificationHandlers = (navigation) => {
-  // Foreground notifications
-  console.log("<><><><><><><><><><><>")
-  messaging().onMessage(async remoteMessage => {
-    console.log(">>>>>>>>>>>>>>>HELLOMessage")
-    displayNotification(remoteMessage.notification);
+const CHANNEL_ID = 'default';
+
+const ensureChannel = () =>
+  notifee.createChannel({
+    id: CHANNEL_ID,
+    name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
+    sound: 'default',
+    vibration: true,
   });
 
-  // Background/Quit state notifications
-  messaging().setBackgroundMessageHandler(async remoteMessage => {
-    displayNotification(remoteMessage.notification);
-  });
-
-  // Notification opened handler
-  messaging().onNotificationOpenedApp(remoteMessage => {
-    handleNotificationNavigation(remoteMessage.data, navigation);
-  });
-
-  // Check if app was opened from notification
-  messaging().getInitialNotification().then(remoteMessage => {
-    if (remoteMessage) {
-      handleNotificationNavigation(remoteMessage.data, navigation);
+// Android 13+ needs the runtime POST_NOTIFICATIONS permission; iOS asks through Firebase
+export const requestNotificationPermission = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      if (Platform.Version < 33) return true;
+      const result = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      return result === PermissionsAndroid.RESULTS.GRANTED;
     }
-  });
+    const status = await messaging().requestPermission();
+    return (
+      status === messaging.AuthorizationStatus.AUTHORIZED ||
+      status === messaging.AuthorizationStatus.PROVISIONAL
+    );
+  } catch (error) {
+    console.error('Notification permission error:', error);
+    return false;
+  }
 };
 
-const displayNotification = async (notification) => {
+export const getFCMToken = async () => {
   try {
+    await messaging().registerDeviceForRemoteMessages();
+    const token = await messaging().getToken();
+    console.log('FCM Token:', token);
+    return token;
+  } catch (error) {
+    console.error('Error getting FCM token:', error);
+    return null;
+  }
+};
+
+export const displayNotification = async (remoteMessage) => {
+  const title = remoteMessage?.notification?.title ?? remoteMessage?.data?.title;
+  const body = remoteMessage?.notification?.body ?? remoteMessage?.data?.body;
+  if (!title && !body) return;
+
+  try {
+    await ensureChannel();
     await notifee.displayNotification({
-      title: notification.title,
-      body: notification.body,
+      title,
+      body,
+      data: remoteMessage?.data,
       android: {
-        channelId: 'default4',
-        important:true,
-        importance:AndroidImportance.HIGH,
-        color: '#065E2C', 
-        colorized: true,  
-        style: {
-          type: AndroidStyle.BIGTEXT,
-          text: notification.body,
-        },
-        // Add custom text appearance
-        pressAction: {
-          id: 'default',
-          launchActivity: 'default',
-        },
+        channelId: CHANNEL_ID,
+        importance: AndroidImportance.HIGH,
+        color: '#003366',
+        style: { type: AndroidStyle.BIGTEXT, text: body || '' },
+        pressAction: { id: 'default', launchActivity: 'default' },
       },
       ios: {
-        foregroundPresentationOptions: {
-          badge: true,
-          sound: true,
-          banner: true,
-          list: true,
-        },
+        foregroundPresentationOptions: { badge: true, sound: true, banner: true, list: true },
       },
     });
   } catch (error) {
@@ -62,43 +73,40 @@ const displayNotification = async (notification) => {
   }
 };
 
-const handleNotificationNavigation = (data, navigation) => {
-  if (data.type === 'order_update') {
-    navigation.navigate('OrderDetails', { orderId: data.orderId });
+// Firebase does not show notifications while the app is open, so display them with notifee.
+// Returns an unsubscribe function.
+export const listenForegroundNotifications = () => {
+  try {
+    return messaging().onMessage(async (remoteMessage) => {
+      console.log('Foreground notification:', remoteMessage);
+      displayNotification(remoteMessage);
+    });
+  } catch (error) {
+    console.error('Foreground notification listener error:', error);
+    return () => {};
   }
-  // Add more navigation handlers as needed
 };
 
-// export const getFCMToken = async () => {
-//   try {
-//     return await messaging().getToken();
-//   } catch (error) {
-//     console.error('Error getting FCM token:', error);
-//     return null;
-//   }
-// }; 
+// Called with the new token whenever Firebase rotates it. Returns an unsubscribe function.
+export const listenTokenRefresh = (onToken) => {
+  try {
+    return messaging().onTokenRefresh(onToken);
+  } catch (error) {
+    console.error('Token refresh listener error:', error);
+    return () => {};
+  }
+};
 
-export const getFCMToken = async () => {
-  const token = await messaging().getToken();
-  console.log(token)
-  messaging().onMessage(async (remoteMessage) => {
-    await notifee.createChannel({
-      id: 'default1',
-      name: 'Default Channel',
-      importance: AndroidImportance.HIGH, // Ensures high priority notifications
-      sound: 'default', // You can add a custom sound here
-      vibration: true,
+// Must be registered outside React (index.js) to handle messages while the app is in background/quit
+export const registerBackgroundHandler = () => {
+  try {
+    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      // Messages with a `notification` block are shown by the system; data-only ones need notifee
+      if (!remoteMessage?.notification) {
+        await displayNotification(remoteMessage);
+      }
     });
-    console.log(">>>>>>>>>>>>>MESSAGECALLING",remoteMessage)
-    await notifee.displayNotification({
-      title: remoteMessage.notification.title,
-      body: remoteMessage.notification.body,
-      android: {
-        channelId: "default1",
-        importance: AndroidImportance.HIGH,
-      },
-    });
-  });
-
- return token
+  } catch (error) {
+    console.error('Background notification handler error:', error);
+  }
 };

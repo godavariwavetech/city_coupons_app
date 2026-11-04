@@ -24,5 +24,9 @@ export const endpoints = {
   BNI_DISTRICTS: "bni/districts",
   BNI_INDUSTRIES: "bni/industries",
   BNI_CONNECTIONS: "bni/connections",
-  
+  // FCM device tokens: POST user/:userId/device-token
+  DEVICE_TOKEN: "device-token",
+  REMOVE_DEVICE_TOKEN: "device-token/remove",
+  // Force update: GET app/version?platform=android|ios&version=x.y.z (public, no auth)
+  APP_VERSION: "app/version",
 };

@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllCoupons, fetchTrendingCoupons, fetchBniCoupons, fetchUserProfile, fetchBniCities, setSelectedCity } from '../redux/reducers/auth';
 import { CouponGridSkeleton, TrendingSkeleton } from '../components/SkeletonLoader';
 import BniLogo from './BniAsk/components/BniLogo';
+import useFcmTokenSync from '../hooks/useFcmTokenSync';
 import CityPickerModal from '../components/CityPickerModal';
 
 const Home = ({ navigation, route }) => {
@@ -108,6 +109,9 @@ const Home = ({ navigation, route }) => {
       loadData();
     }
   }, [isFocused, loadData, userId, selectedCity?.id]);
+
+  // Send the FCM token to the backend every time Home is opened
+  useFcmTokenSync('user', userId);
 
   // Pull-to-refresh
   const onRefresh = useCallback(async () => {

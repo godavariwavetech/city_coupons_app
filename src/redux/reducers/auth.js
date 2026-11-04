@@ -1,5 +1,6 @@
 
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { Platform } from 'react-native';
 import api from '../../utils/api';
 import { endpoints } from '../../config/config';
 
@@ -753,6 +754,39 @@ export const addGivenBniConnection = createAsyncThunk(
 );
 
 
+// Send this device's FCM token so the backend can push notifications.
+// role: 'user' | 'vendor', id: userId / vendorId
+export const saveFcmToken = createAsyncThunk(
+  'notifications/saveFcmToken',
+  async ({ role, id, fcmToken }, { rejectWithValue }) => {
+    try {
+      const response = await api.post(`${role}/${id}/${endpoints.DEVICE_TOKEN}`, {
+        token: fcmToken,
+        platform: Platform.OS,
+      });
+      console.log('Save FCM token response:', response.data);
+      return response.data;
+    } catch (err) {
+      console.log('Save FCM token error:', err?.response?.status, err?.response?.data);
+      const msg = err?.response?.data?.message || err.message || 'Failed to save FCM token';
+      return rejectWithValue(msg);
+    }
+  }
+);
+
+// On logout, so this device stops receiving the previous account's notifications
+export const removeFcmToken = createAsyncThunk(
+  'notifications/removeFcmToken',
+  async (fcmToken, { rejectWithValue }) => {
+    try {
+      const response = await api.post(endpoints.REMOVE_DEVICE_TOKEN, { token: fcmToken });
+      return response.data;
+    } catch (err) {
+      console.log('Remove FCM token error:', err?.response?.status, err?.response?.data);
+      return rejectWithValue(err?.response?.data?.message || err.message);
+    }
+  }
+);
 
 const AuthSlice = createSlice({
   name: 'auth',

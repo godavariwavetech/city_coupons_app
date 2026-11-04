@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "541879601477",
+    "project_id": "coupons-30a1f",
+    "storage_bucket": "coupons-30a1f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541879601477:android:330ddcb4677fa0a517d62c",
+        "android_client_info": {
+          "package_name": "com.bnicoupons"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGZSDaLgClIXm2-8EcCEyZLtfkyRajya8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541879601477:android:94b50331ed02e5ad17d62c",
+        "android_client_info": {
+          "package_name": "com.city_coupons"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBGZSDaLgClIXm2-8EcCEyZLtfkyRajya8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

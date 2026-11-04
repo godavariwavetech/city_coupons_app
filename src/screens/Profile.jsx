@@ -22,6 +22,7 @@ import { fetchUserProfile, updateUserProfile, deleteUserAccount, logout, fetchBn
 import CityPickerModal from "../components/CityPickerModal";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // For clearing local storage
 import DeleteAccountModal from "../components/DeleteAccountModal";
+import { unregisterFcmToken } from "../hooks/useFcmTokenSync";
 
 const { width } = Dimensions.get("window");
 const PRIMARY_COLOR = "rgba(0, 33, 97, 1)";
@@ -127,6 +128,9 @@ function Profile({ navigation }) {
         style: "destructive",
         onPress: async () => {
           try {
+            // 0. Stop push notifications for this account on this device
+            await unregisterFcmToken(dispatch);
+
             // 1. Clear Local Storage
             await AsyncStorage.clear();
 
