@@ -704,10 +704,10 @@ const BniTabNavigator = () => {
         name="MyCoupons"
         component={BniMyCouponsScreen}
       />
-      <BniTab.Screen
+      {/* <BniTab.Screen
         name="BniConnections"
         component={BniConnectionsScreen}
-      />
+      /> */}
       <BniTab.Screen
         name="Profile"
         component={BniProfileScreen}
