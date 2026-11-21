@@ -1699,7 +1699,7 @@ const RegisterManuallyScreen = ({ navigation }) => {
   const handleModalConfirm = () => {
     setModalVisible(false);
     if (isSuccess) {
-      navigation.replace('LoginScreen');
+      navigation.replace('BniLoginScreen');
     }
   };
 

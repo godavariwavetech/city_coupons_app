@@ -285,25 +285,22 @@ const BniLoginScreen = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            {/* iOS app is for users only - Vendor option hidden on iOS */}
-            {Platform.OS !== 'ios' && (
-              <TouchableOpacity
-                style={[styles.roleCard, role === 'vendor' && styles.roleCardActive]}
-                onPress={() => setRole('vendor')}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.roleIconBox, role === 'vendor' && styles.roleIconBoxActive]}>
-                  <Feather
-                    name="briefcase"
-                    size={16}
-                    color={role === 'vendor' ? COLORS.white : COLORS.textGray}
-                  />
-                </View>
-                <Text style={[styles.roleTitle, role === 'vendor' && styles.roleTitleActive]}>
-                  Vendor
-                </Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={[styles.roleCard, role === 'vendor' && styles.roleCardActive]}
+              onPress={() => setRole('vendor')}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.roleIconBox, role === 'vendor' && styles.roleIconBoxActive]}>
+                <Feather
+                  name="briefcase"
+                  size={16}
+                  color={role === 'vendor' ? COLORS.white : COLORS.textGray}
+                />
+              </View>
+              <Text style={[styles.roleTitle, role === 'vendor' && styles.roleTitleActive]}>
+                Vendor
+              </Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputContainer}>

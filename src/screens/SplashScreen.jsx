@@ -16,7 +16,7 @@ const SplashScreen = ({ navigation }) => {
       if (userId) {
         navigation.replace('TabNavigator');
       } else {
-        navigation.replace('LoginScreen');
+        navigation.replace('BniLoginScreen');
       }
     };
 
